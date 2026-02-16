@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>製品一覧</title>
+
+<style>
+body{
+  margin:0;
+  font-family:system-ui;
+  background:#0b0f16;
+  color:#fff;
+}
+
+.container{
+  display:flex;
+  height:100vh;
+}
+
+.categories{
+  width:240px;
+  background:#111827;
+  padding:10px;
+}
+
+.products{
+  width:280px;
+  background:#0f172a;
+  padding:10px;
+}
+
+.detail{
+  flex:1;
+  padding:20px;
+  overflow:auto;
+}
+
+button{
+  width:100%;
+  margin:4px 0;
+  padding:8px;
+  background:#1f2937;
+  color:white;
+  border:none;
+  border-radius:6px;
+}
+
+input{
+  width:100%;
+  margin:6px 0;
+  padding:6px;
+}
+
+img{
+  max-width:100%;
+  border-radius:8px;
+  margin-top:10px;
+}
+
+a{
+  color:#60a5fa;
+  word-break:break-all;
+}
+
+/* スマホレイアウト */
+@media (max-width:700px){
+  .container{
+    flex-direction:column;
+    height:auto;
+  }
+  .categories,.products,.detail{
+    width:100% !important;
+    height:auto;
+  }
+  .detail{
+    display:none; /* スマホでは通常説明欄を隠す */
+  }
+}
+
+/* 全画面モーダル */
+.modal{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:#0b0f16;
+  padding:20px;
+  overflow:auto;
+  display:none;
+  z-index:1000;
+}
+
+.modal button{
+  width:auto;
+  margin-bottom:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="categories">
+<h3>カテゴリ</h3>
+<div id="categoryList"></div>
+</div>
+
+<div class="products">
+<h3>製品</h3>
+<input id="searchBox" placeholder="商品検索" oninput="renderProducts()">
+<div id="productList"></div>
+</div>
+
+<div class="detail">
+<h3>説明</h3>
+<div id="productDetail">製品を選択してください</div>
+</div>
+
+</div>
+
+<!-- スマホ用全画面説明 -->
+<div id="mobileModal" class="modal"></div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAii9UA3YBztj3XE8QErStcf-TpIkFJYWQ",
+  authDomain: "mtgroup-df495.firebaseapp.com",
+  projectId: "mtgroup-df495",
+  storageBucket: "mtgroup-df495.firebasestorage.app",
+  messagingSenderId: "33007954637",
+  appId: "1:33007954637:web:0a1c249df6764f8d855784"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let categories=[];
+let products=[];
+let currentCategory=null;
+
+const categoryList=document.getElementById("categoryList");
+const productList=document.getElementById("productList");
+const productDetail=document.getElementById("productDetail");
+const modal=document.getElementById("mobileModal");
+
+/* URLリンク＋改行 */
+function linkify(text){
+  if(!text) return "";
+  let formatted=text.replace(/\n/g,"<br>");
+  formatted=formatted.replace(
+    /(https?:\/\/[^\s<]+)/g,
+    '<a href="$1" target="_blank">$1</a>'
+  );
+  return formatted;
+}
+
+/* スマホ判定 */
+function isMobile(){
+  return window.innerWidth <= 700;
+}
+
+/* 説明表示 */
+function showProduct(p){
+
+  const html = `
+    <h3>${p.name}</h3>
+    <p>${linkify(p.desc)}</p>
+    ${p.image?`<img src="${p.image}">`:""}
+  `;
+
+  if(isMobile()){
+    modal.style.display="block";
+    modal.innerHTML=`
+      <button onclick="closeModal()">← 戻る</button>
+      ${html}
+    `;
+  }else{
+    productDetail.innerHTML=html;
+  }
+}
+
+window.closeModal=function(){
+  modal.style.display="none";
+}
+
+/* カテゴリ監視 */
+onSnapshot(query(collection(db,"categories"),orderBy("order")), snap=>{
+  categories=[];
+  categoryList.innerHTML="";
+
+  snap.forEach(d=>{
+    categories.push(d.data());
+  });
+
+  categories.forEach(cat=>{
+    const btn=document.createElement("button");
+    btn.textContent=cat.name;
+    btn.onclick=()=>{
+      currentCategory=cat.name;
+      renderProducts();
+    };
+    categoryList.appendChild(btn);
+  });
+});
+
+/* 商品監視 */
+onSnapshot(query(collection(db,"products"),orderBy("order")), snap=>{
+  products=[];
+  snap.forEach(d=>{
+    products.push(d.data());
+  });
+  renderProducts();
+});
+
+/* 商品表示 */
+window.renderProducts=function(){
+
+  const keyword=document.getElementById("searchBox").value.toLowerCase();
+  productList.innerHTML="";
+
+  products
+  .filter(p => (!currentCategory || p.category===currentCategory))
+  .filter(p => p.name.toLowerCase().includes(keyword))
+  .forEach(p=>{
+
+    const btn=document.createElement("button");
+    btn.textContent=p.name;
+    btn.onclick=()=>showProduct(p);
+
+    productList.appendChild(btn);
+  });
+}
+
+</script>
+</body>
+</html>

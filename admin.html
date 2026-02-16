@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>管理画面</title>
+
+<style>
+body{
+  margin:0;
+  font-family:system-ui;
+  background:#0b0f16;
+  color:#fff;
+  padding:20px;
+}
+button{
+  margin:4px 2px;
+  padding:6px 10px;
+  background:#1f2937;
+  color:white;
+  border:none;
+  border-radius:6px;
+}
+input, textarea, select{
+  width:100%;
+  margin:6px 0;
+  padding:6px;
+}
+.panel{
+  background:#111827;
+  padding:12px;
+  border-radius:8px;
+  margin-bottom:20px;
+}
+.item{
+  background:#1f2937;
+  padding:8px;
+  border-radius:6px;
+  margin:6px 0;
+}
+.categoryHeader{
+  background:#374151;
+  padding:8px;
+  border-radius:6px;
+  cursor:pointer;
+  margin-top:8px;
+}
+.preview{
+  margin-top:10px;
+  padding:10px;
+  background:#0f172a;
+  border-radius:8px;
+}
+img{max-width:100%;border-radius:8px;margin-top:10px;}
+a{color:#60a5fa;}
+</style>
+</head>
+
+<body>
+
+<h2>管理画面</h2>
+
+<button onclick="login()">パスワード入力</button>
+<button onclick="logout()">ログアウト</button>
+
+<div id="mainPanel" style="display:none;">
+
+<div class="panel">
+<h3>カテゴリ追加</h3>
+<input id="catName" placeholder="カテゴリ名">
+<button onclick="addCategory()">カテゴリ追加</button>
+</div>
+
+<div class="panel">
+<h3>商品追加</h3>
+
+<input id="searchBox" placeholder="商品検索" oninput="renderProducts()">
+
+<select id="productCategory"></select>
+<input id="pName" placeholder="商品名">
+<input id="pImage" placeholder="画像URL">
+<textarea id="pDesc" placeholder="説明"></textarea>
+<button onclick="addProduct()">商品追加</button>
+
+<div id="productList"></div>
+
+<div id="productPreview" class="preview" style="display:none;"></div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, deleteDoc, doc,
+  updateDoc, onSnapshot, query, orderBy
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAii9UA3YBztj3XE8QErStcf-TpIkFJYWQ",
+  authDomain: "mtgroup-df495.firebaseapp.com",
+  projectId: "mtgroup-df495",
+  storageBucket: "mtgroup-df495.firebasestorage.app",
+  messagingSenderId: "33007954637",
+  appId: "1:33007954637:web:0a1c249df6764f8d855784"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const ADMIN_PASSWORD="1234";
+const LOGIN_KEY="admin_login_time";
+const LOGIN_DURATION=24*60*60*1000;
+
+let categories=[];
+let products=[];
+let openCategories={};
+
+const productList=document.getElementById("productList");
+const productCategory=document.getElementById("productCategory");
+const productPreview=document.getElementById("productPreview");
+
+/* 改行＋URL */
+function linkify(text){
+ if(!text) return "";
+ let formatted=text.replace(/\n/g,"<br>");
+ formatted=formatted.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank">$1</a>');
+ return formatted;
+}
+
+/* ログイン */
+function checkAutoLogin(){
+ const loginTime=localStorage.getItem(LOGIN_KEY);
+ if(loginTime && Date.now()-loginTime<LOGIN_DURATION){
+  showPanel();
+ }
+}
+
+function showPanel(){
+ document.getElementById("mainPanel").style.display="block";
+}
+
+window.login=function(){
+ const pass=prompt("パスワード");
+ if(pass===ADMIN_PASSWORD){
+  localStorage.setItem(LOGIN_KEY,Date.now());
+  showPanel();
+ }
+}
+
+window.logout=function(){
+ localStorage.removeItem(LOGIN_KEY);
+ location.reload();
+}
+
+/* カテゴリ追加 */
+window.addCategory=async function(){
+ const name=document.getElementById("catName").value;
+ if(!name) return;
+ await addDoc(collection(db,"categories"),{name,order:Date.now()});
+ document.getElementById("catName").value="";
+}
+
+/* 商品追加 */
+window.addProduct=async function(){
+ const category=productCategory.value;
+ const name=document.getElementById("pName").value;
+ const desc=document.getElementById("pDesc").value;
+ const image=document.getElementById("pImage").value;
+ if(!category||!name) return;
+
+ await addDoc(collection(db,"products"),{
+  category,name,desc,image,order:Date.now()
+ });
+
+ document.getElementById("pName").value="";
+ document.getElementById("pDesc").value="";
+ document.getElementById("pImage").value="";
+}
+
+/* 編集 */
+window.editCategory=async function(id,oldName){
+ const newName=prompt("カテゴリ名",oldName);
+ if(newName) await updateDoc(doc(db,"categories",id),{name:newName});
+}
+
+window.editProduct=async function(id,p){
+ const name=prompt("商品名",p.name);
+ if(name===null) return;
+ const desc=prompt("説明",p.desc||"");
+ if(desc===null) return;
+ const image=prompt("画像URL",p.image||"");
+ await updateDoc(doc(db,"products",id),{name,desc,image});
+}
+
+/* 並び替え */
+async function moveUp(list,index,col){
+ if(index===0) return;
+ const a=list[index];
+ const b=list[index-1];
+ await updateDoc(doc(db,col,a.id),{order:b.order});
+ await updateDoc(doc(db,col,b.id),{order:a.order});
+}
+
+async function moveDown(list,index,col){
+ if(index===list.length-1) return;
+ const a=list[index];
+ const b=list[index+1];
+ await updateDoc(doc(db,col,a.id),{order:b.order});
+ await updateDoc(doc(db,col,b.id),{order:a.order});
+}
+
+window.moveCategoryUp=i=>moveUp(categories,i,"categories");
+window.moveCategoryDown=i=>moveDown(categories,i,"categories");
+window.moveProductUp=i=>moveUp(products,i,"products");
+window.moveProductDown=i=>moveDown(products,i,"products");
+
+/* プレビュー */
+window.showPreview=function(p){
+ productPreview.style.display="block";
+ productPreview.innerHTML=`
+  <strong>${p.name}</strong>
+  <hr>
+  <p>${linkify(p.desc)}</p>
+  ${p.image?`<img src="${p.image}">`:""}
+ `;
+}
+
+/* 折りたたみ */
+window.toggleCategory=function(name){
+ openCategories[name]=!openCategories[name];
+ renderProducts();
+}
+
+/* Firestore監視 */
+onSnapshot(query(collection(db,"categories"),orderBy("order")), snap=>{
+ categories=[];
+ productCategory.innerHTML="";
+
+ snap.forEach(d=>{
+  const data={id:d.id,...d.data()};
+  categories.push(data);
+
+  const opt=document.createElement("option");
+  opt.value=data.name;
+  opt.textContent=data.name;
+  productCategory.appendChild(opt);
+ });
+
+ renderProducts();
+});
+
+onSnapshot(query(collection(db,"products"),orderBy("order")), snap=>{
+ products=[];
+ snap.forEach(d=>{
+  products.push({id:d.id,...d.data()});
+ });
+ renderProducts();
+});
+
+/* 描画 */
+window.renderProducts=function(){
+ const keyword=document.getElementById("searchBox").value.toLowerCase();
+ productList.innerHTML="";
+
+ categories.forEach((cat,catIndex)=>{
+  const header=document.createElement("div");
+  header.className="categoryHeader";
+  header.innerHTML=`
+   ${(openCategories[cat.name]?"▼":"▶")} ${cat.name}
+   <button onclick="event.stopPropagation();moveCategoryUp(${catIndex})">▲</button>
+   <button onclick="event.stopPropagation();moveCategoryDown(${catIndex})">▼</button>
+   <button onclick="event.stopPropagation();editCategory('${cat.id}','${cat.name}')">編集</button>
+  `;
+  header.onclick=()=>toggleCategory(cat.name);
+  productList.appendChild(header);
+
+  if(!openCategories[cat.name]) return;
+
+  products
+   .filter(p=>p.category===cat.name)
+   .filter(p=>p.name.toLowerCase().includes(keyword))
+   .forEach((p,index)=>{
+    const div=document.createElement("div");
+    div.className="item";
+    div.innerHTML=`
+     ${p.name}
+     <button onclick='showPreview(${JSON.stringify(p)})'>表示</button>
+     <button onclick='editProduct("${p.id}",${JSON.stringify(p)})'>編集</button>
+     <button onclick="moveProductUp(${index})">▲</button>
+     <button onclick="moveProductDown(${index})">▼</button>
+     <button onclick="deleteProduct('${p.id}')">削除</button>
+    `;
+    productList.appendChild(div);
+   });
+ });
+}
+
+window.deleteProduct=async id=>{
+ if(confirm("削除しますか？")){
+  await deleteDoc(doc(db,"products",id));
+ }
+};
+
+checkAutoLogin();
+
+</script>
+</body>
+</html>
