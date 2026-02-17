@@ -7,17 +7,26 @@
 
 <style>
 
+/* ===== 大理石風背景 ===== */
 body{
   margin:0;
   font-family:"Georgia", serif;
   color:#e5e7eb;
+
   background:
-    radial-gradient(circle at 20% 30%, rgba(255,215,160,0.10), transparent 45%),
-    radial-gradient(circle at 80% 70%, rgba(200,160,80,0.12), transparent 45%),
-    linear-gradient(180deg,#020617,#020617,#030712);
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,0.04), transparent 40%),
+    radial-gradient(circle at 70% 80%, rgba(255,255,255,0.03), transparent 45%),
+    repeating-linear-gradient(
+      120deg,
+      #020617,
+      #020617 60px,
+      #030712 60px,
+      #030712 120px
+    ),
+    linear-gradient(180deg,#020617,#020617);
 }
 
-/* ヘッダー */
+/* ===== ヘッダー ===== */
 .header{
   position:fixed;
   top:0;
@@ -27,7 +36,7 @@ body{
   display:flex;
   align-items:center;
   justify-content:center;
-  background:rgba(10,14,20,0.88);
+  background:rgba(8,10,14,0.85);
   backdrop-filter:blur(10px);
   border-bottom:1px solid rgba(255,215,160,.25);
   box-shadow:0 6px 20px rgba(0,0,0,.6);
@@ -40,7 +49,7 @@ body{
   color:#f5d28c;
 }
 
-/* レイアウト */
+/* ===== レイアウト ===== */
 .container{
   display:flex;
   max-width:1400px;
@@ -50,10 +59,10 @@ body{
   height:calc(100vh - 110px);
 }
 
-/* パネル */
+/* ===== パネル ===== */
 .panel{
   position:relative;
-  background:rgba(10,14,20,0.75);
+  background:rgba(12,14,18,0.75);
   backdrop-filter:blur(14px);
   border-radius:14px;
   padding:20px;
@@ -83,7 +92,7 @@ h3{
   letter-spacing:.06em;
 }
 
-/* カテゴリ */
+/* ===== カテゴリ ===== */
 .categoryBtn{
   width:100%;
   margin:10px 0;
@@ -99,14 +108,14 @@ h3{
   box-shadow:0 0 16px rgba(255,215,160,.35);
 }
 
-/* 商品グリッド */
+/* ===== 商品グリッド ===== */
 #productList{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:14px;
 }
 
-/* カード */
+/* ===== カード ===== */
 .card{
   background:linear-gradient(180deg,#020617,#030712);
   border-radius:14px;
@@ -146,7 +155,7 @@ h3{
   color:#f5d28c;
 }
 
-/* 検索 */
+/* ===== 検索 ===== */
 input{
   width:100%;
   padding:10px;
@@ -157,7 +166,7 @@ input{
   margin:10px 0;
 }
 
-/* スマホ */
+/* ===== スマホ ===== */
 @media (max-width:700px){
   .container{
     flex-direction:column;
@@ -168,11 +177,11 @@ input{
   }
 
   #productList{
-    grid-template-columns:1fr; /* スマホは1列 */
+    grid-template-columns:1fr;
   }
 }
 
-/* モーダル */
+/* ===== モーダル ===== */
 .modal{
   position:fixed;
   top:0;
