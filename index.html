@@ -6,7 +6,6 @@
 <title>製品一覧</title>
 
 <style>
-
 *{ box-sizing:border-box; }
 
 body{
@@ -21,9 +20,7 @@ body{
 
 .header{
   position:fixed;
-  top:0;
-  left:0;
-  right:0;
+  top:0; left:0; right:0;
   height:72px;
   display:flex;
   align-items:center;
@@ -64,20 +61,20 @@ body{
 .products{ width:420px; }
 .detail{ flex:1; overflow:auto; }
 
-h3{
-  margin-top:0;
-  color:#f5d28c;
-}
+h3{ margin-top:0; color:#f5d28c; }
 
-/* NEWマーク */
-.newBadge{
-  background:#ef4444;
-  color:white;
+/* バッジ */
+.badge{
   font-size:10px;
   padding:2px 6px;
   border-radius:6px;
   margin-left:6px;
+  color:white;
 }
+
+.badge-new{ background:#ef4444; }
+.badge-hot{ background:#f59e0b; }
+.badge-update{ background:#3b82f6; }
 
 /* カテゴリ */
 .categoryBtn{
@@ -94,9 +91,7 @@ h3{
 .categoryBtn.active::before{
   content:"";
   position:absolute;
-  left:0;
-  top:6px;
-  bottom:6px;
+  left:0; top:6px; bottom:6px;
   width:4px;
   border-radius:3px;
   background:linear-gradient(#f5d28c,#caa24a);
@@ -115,7 +110,7 @@ h3{
   flex:1;
 }
 
-/* 横カード */
+/* 商品カード */
 .card{
   display:flex;
   gap:12px;
@@ -130,9 +125,7 @@ h3{
   transition:.25s;
 }
 
-.card:hover{
-  transform:translateY(-2px);
-}
+.card:hover{ transform:translateY(-2px); }
 
 .card img{
   width:72px;
@@ -162,17 +155,14 @@ input{
 
 .modal{
   position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
+  top:0; left:0;
+  width:100%; height:100%;
   background:#020617;
   padding:20px;
   overflow:auto;
   display:none;
   z-index:1000;
 }
-
 </style>
 </head>
 
@@ -217,12 +207,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAii9UA3YBztj3XE8QErStcf-TpIkFJYWQ",
-  authDomain: "mtgroup-df495.firebaseapp.com",
-  projectId: "mtgroup-df495",
-  storageBucket: "mtgroup-df495.firebasestorage.app",
-  messagingSenderId: "33007954637",
-  appId: "1:33007954637:web:0a1c249df6764f8d855784"
+  apiKey:"AIzaSyAii9UA3YBztj3XE8QErStcf-TpIkFJYWQ",
+  authDomain:"mtgroup-df495.firebaseapp.com",
+  projectId:"mtgroup-df495",
+  storageBucket:"mtgroup-df495.firebasestorage.app",
+  messagingSenderId:"33007954637",
+  appId:"1:33007954637:web:0a1c249df6764f8d855784"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -232,10 +222,19 @@ let categories=[];
 let products=[];
 let currentCategory=null;
 
-/* 最後に見た時間 */
-const LAST_VIEW_KEY="last_view_time";
-let lastViewTime = Number(localStorage.getItem(LAST_VIEW_KEY)||0);
-localStorage.setItem(LAST_VIEW_KEY, Date.now());
+/* NEW表示48時間 */
+const NEW_LIMIT = 48*60*60*1000;
+function isNew(updatedAt){
+  return updatedAt && (Date.now()-updatedAt < NEW_LIMIT);
+}
+
+/* タグ表示 */
+function tagBadge(tag){
+  if(!tag) return "";
+  if(tag==="人気") return '<span class="badge badge-hot">人気</span>';
+  if(tag==="更新") return '<span class="badge badge-update">更新</span>';
+  return `<span class="badge">${tag}</span>`;
+}
 
 const categoryList=document.getElementById("categoryList");
 const productList=document.getElementById("productList");
@@ -255,10 +254,10 @@ function linkify(text){
   return formatted;
 }
 
-function isMobile(){ return window.innerWidth <= 700; }
+function isMobile(){ return window.innerWidth<=700; }
 
 function showProduct(p){
-  const html = `
+  const html=`
     <h3>${p.name}</h3>
     <p>${linkify(p.desc)}</p>
     ${p.image?`<img src="${p.image}" style="max-width:100%;border-radius:8px;">`:""}
@@ -280,6 +279,11 @@ function renderCategories(){
   allBtn.className="categoryBtn";
   if(currentCategory===null) allBtn.classList.add("active");
   allBtn.textContent="すべて";
+  allBtn.onclick=()=>{
+    currentCategory=null;
+    renderProducts();
+    renderCategories();
+  };
   categoryList.appendChild(allBtn);
 
   categories.forEach(cat=>{
@@ -288,14 +292,14 @@ function renderCategories(){
     if(currentCategory===cat.name) btn.classList.add("active");
 
     btn.innerHTML = cat.name +
-      (cat.updatedAt && cat.updatedAt > lastViewTime
-        ? ' <span class="newBadge">NEW</span>' : '');
+      (isNew(cat.updatedAt) ? ' <span class="badge badge-new">NEW</span>' : '');
 
     btn.onclick=()=>{
       currentCategory=cat.name;
       renderProducts();
       renderCategories();
     };
+
     categoryList.appendChild(btn);
   });
 }
@@ -327,8 +331,8 @@ window.renderProducts=function(){
         ${p.image?`<img src="${p.image}">`:""}
         <div class="cardTitle">
           ${p.name}
-          ${p.updatedAt && p.updatedAt > lastViewTime
-            ? '<span class="newBadge">NEW</span>' : ''}
+          ${tagBadge(p.tag)}
+          ${isNew(p.updatedAt) ? '<span class="badge badge-new">NEW</span>' : ''}
         </div>
       `;
 
@@ -336,7 +340,6 @@ window.renderProducts=function(){
       productList.appendChild(card);
     });
 }
-
 </script>
 </body>
 </html>
