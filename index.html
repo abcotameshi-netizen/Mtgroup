@@ -7,93 +7,143 @@
 
 <style>
 
-/* 背景 */
 body{
   margin:0;
-  font-family: "Georgia", "Times New Roman", serif;
+  font-family:"Georgia", serif;
   color:#e5e7eb;
   background:
-    radial-gradient(circle at 20% 20%, #1a1a2e, #020617 60%),
-    linear-gradient(180deg,#020617,#020617);
+    radial-gradient(circle at 20% 30%, rgba(255,215,160,0.10), transparent 45%),
+    radial-gradient(circle at 80% 70%, rgba(200,160,80,0.12), transparent 45%),
+    linear-gradient(180deg,#020617,#020617,#030712);
+}
+
+/* ヘッダー */
+.header{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:72px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(10,14,20,0.88);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(255,215,160,.25);
+  box-shadow:0 6px 20px rgba(0,0,0,.6);
+  z-index:100;
+}
+
+.logoText{
+  font-size:20px;
+  letter-spacing:.12em;
+  color:#f5d28c;
 }
 
 /* レイアウト */
 .container{
   display:flex;
-  height:100vh;
-  gap:16px;
-  padding:16px;
+  max-width:1400px;
+  margin:90px auto 20px auto;
+  gap:22px;
+  padding:0 20px;
+  height:calc(100vh - 110px);
 }
 
 /* パネル */
 .panel{
-  background:linear-gradient(180deg,#0b0f16,#020617);
+  position:relative;
+  background:rgba(10,14,20,0.75);
+  backdrop-filter:blur(14px);
   border-radius:14px;
-  padding:16px;
+  padding:20px;
+  border:1px solid rgba(255,215,160,.25);
   box-shadow:
-    0 20px 40px rgba(0,0,0,.8),
-    inset 0 0 0 1px rgba(255,215,0,.08);
-  border:1px solid rgba(255,215,0,.08);
+    0 20px 50px rgba(0,0,0,.85),
+    inset 0 0 0 1px rgba(255,215,160,.06);
 }
 
-.categories{ width:220px; }
-.products{ width:320px; }
+.panel::after{
+  content:"";
+  position:absolute;
+  inset:6px;
+  border-radius:10px;
+  border:1px solid rgba(255,215,160,.08);
+  pointer-events:none;
+}
+
+.categories{ width:260px; }
+.products{ width:420px; }
 .detail{ flex:1; overflow:auto; }
 
-/* タイトル */
 h3{
   margin-top:0;
+  color:#f5d28c;
   font-weight:500;
-  letter-spacing:.05em;
-  color:#fbbf24;
+  letter-spacing:.06em;
 }
 
 /* カテゴリ */
 .categoryBtn{
   width:100%;
-  margin:8px 0;
-  padding:10px;
-  background:linear-gradient(180deg,#111827,#020617);
+  margin:10px 0;
+  padding:12px;
   border-radius:10px;
   cursor:pointer;
-  border:1px solid rgba(255,215,0,.06);
-  transition:.25s;
-}
-
-.categoryBtn:hover{
-  background:#111827;
-  box-shadow:0 0 12px rgba(255,215,0,.15);
+  background:linear-gradient(180deg,#0b0f16,#020617);
+  border:1px solid rgba(255,215,160,.10);
 }
 
 .categoryBtn.active{
-  background:linear-gradient(180deg,#1e293b,#020617);
-  border:1px solid rgba(255,215,0,.35);
-  box-shadow:0 0 18px rgba(255,215,0,.25);
+  border:1px solid rgba(255,215,160,.45);
+  box-shadow:0 0 16px rgba(255,215,160,.35);
 }
 
-/* 商品カード */
+/* 商品グリッド */
+#productList{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+/* カード */
 .card{
   background:linear-gradient(180deg,#020617,#030712);
-  border-radius:12px;
-  padding:12px;
-  margin:12px 0;
+  border-radius:14px;
+  padding:14px;
   cursor:pointer;
-  border:1px solid rgba(255,215,0,.06);
-  transition:.25s;
-  box-shadow:0 10px 20px rgba(0,0,0,.6);
+  text-align:center;
+  border:1px solid rgba(255,215,160,.20);
+  position:relative;
+  box-shadow:0 16px 30px rgba(0,0,0,.8);
+  transition:.3s;
+}
+
+.card::after{
+  content:"";
+  position:absolute;
+  inset:6px;
+  border-radius:10px;
+  border:1px solid rgba(255,215,160,.10);
+  pointer-events:none;
 }
 
 .card:hover{
-  transform:translateY(-4px);
+  transform:translateY(-4px) scale(1.02);
   box-shadow:
-    0 18px 32px rgba(0,0,0,.8),
-    0 0 12px rgba(255,215,0,.15);
+    0 24px 40px rgba(0,0,0,.9),
+    0 0 14px rgba(255,215,160,.30);
 }
 
 .card img{
   width:100%;
-  border-radius:8px;
+  border-radius:10px;
   margin-bottom:8px;
+}
+
+.cardTitle{
+  font-size:15px;
+  color:#f5d28c;
 }
 
 /* 検索 */
@@ -101,11 +151,10 @@ input{
   width:100%;
   padding:10px;
   border-radius:10px;
-  border:none;
-  margin:10px 0;
+  border:1px solid rgba(255,215,160,.20);
   background:#020617;
   color:#e5e7eb;
-  border:1px solid rgba(255,215,0,.15);
+  margin:10px 0;
 }
 
 /* スマホ */
@@ -116,6 +165,10 @@ input{
   }
   .detail{
     display:none;
+  }
+
+  #productList{
+    grid-template-columns:1fr; /* スマホは1列 */
   }
 }
 
@@ -133,17 +186,16 @@ input{
   z-index:1000;
 }
 
-.modal button{
-  width:auto;
-  margin-bottom:12px;
-}
-
-a{ color:#fbbf24; }
+a{ color:#f5d28c; }
 
 </style>
 </head>
 
 <body>
+
+<div class="header">
+  <div class="logoText">MT GROUP PRODUCT LIST</div>
+</div>
 
 <div class="container">
 
@@ -193,20 +245,14 @@ const productList=document.getElementById("productList");
 const productDetail=document.getElementById("productDetail");
 const modal=document.getElementById("mobileModal");
 
-/* 改行＋リンク */
 function linkify(text){
   if(!text) return "";
   let formatted=text.replace(/\n/g,"<br>");
-  formatted=formatted.replace(
-    /(https?:\/\/[^\s<]+)/g,
-    '<a href="$1" target="_blank">$1</a>'
-  );
+  formatted=formatted.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank">$1</a>');
   return formatted;
 }
 
-function isMobile(){
-  return window.innerWidth <= 700;
-}
+function isMobile(){ return window.innerWidth <= 700; }
 
 function showProduct(p){
   const html = `
@@ -214,7 +260,6 @@ function showProduct(p){
     <p>${linkify(p.desc)}</p>
     ${p.image?`<img src="${p.image}" style="max-width:100%;border-radius:8px;">`:""}
   `;
-
   if(isMobile()){
     modal.style.display="block";
     modal.innerHTML=`<button onclick="closeModal()">← 戻る</button>${html}`;
@@ -223,11 +268,8 @@ function showProduct(p){
   }
 }
 
-window.closeModal=function(){
-  modal.style.display="none";
-}
+window.closeModal=function(){ modal.style.display="none"; }
 
-/* カテゴリ描画 */
 function renderCategories(){
   categoryList.innerHTML="";
   categories.forEach(cat=>{
@@ -236,18 +278,15 @@ function renderCategories(){
     if(currentCategory===cat.name) btn.classList.add("active");
 
     btn.textContent=cat.name;
-
     btn.onclick=()=>{
       currentCategory=cat.name;
       renderProducts();
       renderCategories();
     };
-
     categoryList.appendChild(btn);
   });
 }
 
-/* Firestore */
 onSnapshot(query(collection(db,"categories"),orderBy("order")), snap=>{
   categories=[];
   snap.forEach(d=>categories.push(d.data()));
@@ -260,28 +299,25 @@ onSnapshot(query(collection(db,"products"),orderBy("order")), snap=>{
   renderProducts();
 });
 
-/* 商品描画 */
 window.renderProducts=function(){
-
   const keyword=document.getElementById("searchBox").value.toLowerCase();
   productList.innerHTML="";
 
   products
-  .filter(p => (!currentCategory || p.category===currentCategory))
-  .filter(p => p.name.toLowerCase().includes(keyword))
-  .forEach(p=>{
+    .filter(p => (!currentCategory || p.category===currentCategory))
+    .filter(p => p.name.toLowerCase().includes(keyword))
+    .forEach(p=>{
+      const card=document.createElement("div");
+      card.className="card";
 
-    const card=document.createElement("div");
-    card.className="card";
+      card.innerHTML=`
+        ${p.image?`<img src="${p.image}">`:""}
+        <div class="cardTitle">${p.name}</div>
+      `;
 
-    card.innerHTML=`
-      ${p.image?`<img src="${p.image}">`:""}
-      <strong>${p.name}</strong>
-    `;
-
-    card.onclick=()=>showProduct(p);
-    productList.appendChild(card);
-  });
+      card.onclick=()=>showProduct(p);
+      productList.appendChild(card);
+    });
 }
 
 </script>
