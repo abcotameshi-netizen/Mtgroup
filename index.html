@@ -9,22 +9,15 @@
 
 *{ box-sizing:border-box; }
 
-/* ===== 明るめ大理石背景 ===== */
+/* 背景（暗め大理石） */
 body{
   margin:0;
   font-family:"Georgia", serif;
-  color:#1f2937;
-
+  color:#e5e7eb;
   background:
-    radial-gradient(circle at 30% 20%, rgba(255,255,255,0.9), transparent 40%),
-    radial-gradient(circle at 70% 80%, rgba(220,220,220,0.6), transparent 45%),
-    repeating-linear-gradient(
-      120deg,
-      #f3f4f6,
-      #f3f4f6 80px,
-      #e5e7eb 80px,
-      #e5e7eb 160px
-    );
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,0.04), transparent 40%),
+    radial-gradient(circle at 70% 80%, rgba(255,255,255,0.03), transparent 45%),
+    linear-gradient(180deg,#020617,#020617,#030712);
 }
 
 /* ヘッダー */
@@ -37,16 +30,16 @@ body{
   display:flex;
   align-items:center;
   justify-content:center;
-  background:rgba(255,255,255,0.85);
-  backdrop-filter:blur(8px);
-  border-bottom:1px solid rgba(0,0,0,.1);
+  background:rgba(8,10,14,0.85);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(255,215,160,.25);
   z-index:100;
 }
 
 .logoText{
   font-size:20px;
   letter-spacing:.12em;
-  color:#9a7b2f;
+  color:#f5d28c;
 }
 
 /* レイアウト */
@@ -62,12 +55,12 @@ body{
 /* パネル */
 .panel{
   position:relative;
-  background:rgba(255,255,255,0.85);
-  backdrop-filter:blur(10px);
+  background:rgba(12,14,18,0.75);
+  backdrop-filter:blur(14px);
   border-radius:14px;
   padding:16px;
-  border:1px solid rgba(0,0,0,.08);
-  box-shadow:0 10px 25px rgba(0,0,0,.15);
+  border:1px solid rgba(255,215,160,.25);
+  box-shadow:0 20px 50px rgba(0,0,0,.85);
 }
 
 .categories{ width:260px; }
@@ -76,29 +69,34 @@ body{
 
 h3{
   margin-top:0;
-  color:#9a7b2f;
+  color:#f5d28c;
 }
 
-/* カテゴリ */
+/* ===== カテゴリボタン ===== */
 .categoryBtn{
   width:100%;
   margin:8px 0;
   padding:12px 12px 12px 14px;
   border-radius:10px;
   cursor:pointer;
-  background:#ffffff;
-  border:1px solid rgba(0,0,0,.08);
+
+  background:linear-gradient(180deg,#0b0f16,#020617);
+  border:1px solid rgba(255,215,160,.12);
+
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
+
   position:relative;
-  transition:.2s;
+  transition:.25s;
 }
 
+/* ホバー */
 .categoryBtn:hover{
-  box-shadow:0 0 10px rgba(0,0,0,.15);
+  box-shadow:0 0 12px rgba(255,215,160,.25);
 }
 
+/* 選択中の金バー */
 .categoryBtn.active::before{
   content:"";
   position:absolute;
@@ -107,7 +105,8 @@ h3{
   bottom:6px;
   width:4px;
   border-radius:3px;
-  background:linear-gradient(#d4af37,#b8962e);
+  background:linear-gradient(#f5d28c,#caa24a);
+  box-shadow:0 0 10px rgba(255,215,160,.6);
 }
 
 /* 商品グリッド */
@@ -117,21 +116,23 @@ h3{
   gap:14px;
 }
 
-/* カード */
+/* 商品カード */
 .card{
-  background:#ffffff;
+  background:linear-gradient(180deg,#020617,#030712);
   border-radius:14px;
   padding:14px;
   cursor:pointer;
   text-align:center;
-  border:1px solid rgba(0,0,0,.08);
-  box-shadow:0 8px 20px rgba(0,0,0,.15);
-  transition:.2s;
+  border:1px solid rgba(255,215,160,.20);
+  box-shadow:0 14px 28px rgba(0,0,0,.8);
+  transition:.25s;
 }
 
 .card:hover{
-  transform:translateY(-3px);
-  box-shadow:0 14px 30px rgba(0,0,0,.2);
+  transform:translateY(-4px);
+  box-shadow:
+    0 22px 40px rgba(0,0,0,.9),
+    0 0 14px rgba(255,215,160,.25);
 }
 
 .card img{
@@ -141,7 +142,7 @@ h3{
 }
 
 .cardTitle{
-  color:#9a7b2f;
+  color:#f5d28c;
   font-size:15px;
 }
 
@@ -150,9 +151,9 @@ input{
   width:100%;
   padding:10px;
   border-radius:10px;
-  border:1px solid rgba(0,0,0,.15);
-  background:#fff;
-  color:#111;
+  border:1px solid rgba(255,215,160,.20);
+  background:#020617;
+  color:#e5e7eb;
   margin:10px 0;
 }
 
@@ -179,14 +180,14 @@ input{
   left:0;
   width:100%;
   height:100%;
-  background:#ffffff;
+  background:#020617;
   padding:20px;
   overflow:auto;
   display:none;
   z-index:1000;
 }
 
-a{ color:#9a7b2f; }
+a{ color:#f5d28c; }
 
 </style>
 </head>
