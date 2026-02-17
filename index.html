@@ -7,26 +7,20 @@
 
 <style>
 
-/* ===== 大理石風背景 ===== */
+*{ box-sizing:border-box; }
+
+/* 背景（暗め大理石） */
 body{
   margin:0;
   font-family:"Georgia", serif;
   color:#e5e7eb;
-
   background:
     radial-gradient(circle at 30% 20%, rgba(255,255,255,0.04), transparent 40%),
     radial-gradient(circle at 70% 80%, rgba(255,255,255,0.03), transparent 45%),
-    repeating-linear-gradient(
-      120deg,
-      #020617,
-      #020617 60px,
-      #030712 60px,
-      #030712 120px
-    ),
-    linear-gradient(180deg,#020617,#020617);
+    linear-gradient(180deg,#020617,#020617,#030712);
 }
 
-/* ===== ヘッダー ===== */
+/* ヘッダー */
 .header{
   position:fixed;
   top:0;
@@ -39,7 +33,6 @@ body{
   background:rgba(8,10,14,0.85);
   backdrop-filter:blur(10px);
   border-bottom:1px solid rgba(255,215,160,.25);
-  box-shadow:0 6px 20px rgba(0,0,0,.6);
   z-index:100;
 }
 
@@ -49,36 +42,25 @@ body{
   color:#f5d28c;
 }
 
-/* ===== レイアウト ===== */
+/* レイアウト */
 .container{
   display:flex;
   max-width:1400px;
   margin:90px auto 20px auto;
-  gap:22px;
-  padding:0 20px;
+  gap:20px;
+  padding:0 16px;
   height:calc(100vh - 110px);
 }
 
-/* ===== パネル ===== */
+/* パネル */
 .panel{
   position:relative;
   background:rgba(12,14,18,0.75);
   backdrop-filter:blur(14px);
   border-radius:14px;
-  padding:20px;
+  padding:16px;
   border:1px solid rgba(255,215,160,.25);
-  box-shadow:
-    0 20px 50px rgba(0,0,0,.85),
-    inset 0 0 0 1px rgba(255,215,160,.06);
-}
-
-.panel::after{
-  content:"";
-  position:absolute;
-  inset:6px;
-  border-radius:10px;
-  border:1px solid rgba(255,215,160,.08);
-  pointer-events:none;
+  box-shadow:0 20px 50px rgba(0,0,0,.85);
 }
 
 .categories{ width:260px; }
@@ -88,34 +70,53 @@ body{
 h3{
   margin-top:0;
   color:#f5d28c;
-  font-weight:500;
-  letter-spacing:.06em;
 }
 
-/* ===== カテゴリ ===== */
+/* ===== カテゴリボタン ===== */
 .categoryBtn{
   width:100%;
-  margin:10px 0;
-  padding:12px;
+  margin:8px 0;
+  padding:12px 12px 12px 14px;
   border-radius:10px;
   cursor:pointer;
+
   background:linear-gradient(180deg,#0b0f16,#020617);
-  border:1px solid rgba(255,215,160,.10);
+  border:1px solid rgba(255,215,160,.12);
+
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+
+  position:relative;
+  transition:.25s;
 }
 
-.categoryBtn.active{
-  border:1px solid rgba(255,215,160,.45);
-  box-shadow:0 0 16px rgba(255,215,160,.35);
+/* ホバー */
+.categoryBtn:hover{
+  box-shadow:0 0 12px rgba(255,215,160,.25);
 }
 
-/* ===== 商品グリッド ===== */
+/* 選択中の金バー */
+.categoryBtn.active::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:6px;
+  bottom:6px;
+  width:4px;
+  border-radius:3px;
+  background:linear-gradient(#f5d28c,#caa24a);
+  box-shadow:0 0 10px rgba(255,215,160,.6);
+}
+
+/* 商品グリッド */
 #productList{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:14px;
 }
 
-/* ===== カード ===== */
+/* 商品カード */
 .card{
   background:linear-gradient(180deg,#020617,#030712);
   border-radius:14px;
@@ -123,25 +124,15 @@ h3{
   cursor:pointer;
   text-align:center;
   border:1px solid rgba(255,215,160,.20);
-  position:relative;
-  box-shadow:0 16px 30px rgba(0,0,0,.8);
-  transition:.3s;
-}
-
-.card::after{
-  content:"";
-  position:absolute;
-  inset:6px;
-  border-radius:10px;
-  border:1px solid rgba(255,215,160,.10);
-  pointer-events:none;
+  box-shadow:0 14px 28px rgba(0,0,0,.8);
+  transition:.25s;
 }
 
 .card:hover{
-  transform:translateY(-4px) scale(1.02);
+  transform:translateY(-4px);
   box-shadow:
-    0 24px 40px rgba(0,0,0,.9),
-    0 0 14px rgba(255,215,160,.30);
+    0 22px 40px rgba(0,0,0,.9),
+    0 0 14px rgba(255,215,160,.25);
 }
 
 .card img{
@@ -151,11 +142,11 @@ h3{
 }
 
 .cardTitle{
-  font-size:15px;
   color:#f5d28c;
+  font-size:15px;
 }
 
-/* ===== 検索 ===== */
+/* 検索 */
 input{
   width:100%;
   padding:10px;
@@ -166,12 +157,13 @@ input{
   margin:10px 0;
 }
 
-/* ===== スマホ ===== */
+/* スマホ */
 @media (max-width:700px){
   .container{
     flex-direction:column;
     height:auto;
   }
+
   .detail{
     display:none;
   }
@@ -181,7 +173,7 @@ input{
   }
 }
 
-/* ===== モーダル ===== */
+/* モーダル */
 .modal{
   position:fixed;
   top:0;
