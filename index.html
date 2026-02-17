@@ -6,33 +6,42 @@
 <title>製品一覧</title>
 
 <style>
+
+/* 背景 */
 body{
   margin:0;
   font-family:system-ui;
-  background:linear-gradient(180deg,#0b0f16,#020617);
   color:#fff;
+  background:
+    radial-gradient(circle at 20% 20%, #1e3a8a55, transparent 40%),
+    radial-gradient(circle at 80% 70%, #9333ea55, transparent 40%),
+    linear-gradient(180deg,#020617,#020617,#030712);
 }
 
+/* レイアウト */
 .container{
   display:flex;
   height:100vh;
-  gap:12px;
-  padding:12px;
+  gap:14px;
+  padding:14px;
 }
 
+/* ガラス風パネル */
 .panel{
-  background:rgba(17,24,39,0.75);
-  backdrop-filter:blur(10px);
-  border-radius:16px;
-  padding:14px;
-  box-shadow:0 12px 30px rgba(0,0,0,.45);
+  background:rgba(17,24,39,0.6);
+  backdrop-filter:blur(14px);
+  border-radius:18px;
+  padding:16px;
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.6),
+    inset 0 0 0 1px rgba(255,255,255,.04);
 }
 
 .categories{ width:220px; }
 .products{ width:320px; }
 .detail{ flex:1; overflow:auto; }
 
-/* カテゴリ */
+/* カテゴリボタン */
 .categoryBtn{
   width:100%;
   margin:6px 0;
@@ -40,28 +49,37 @@ body{
   background:linear-gradient(180deg,#1f2937,#111827);
   border-radius:12px;
   cursor:pointer;
-  transition:.2s;
+  transition:.25s;
+}
+
+.categoryBtn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 14px rgba(0,0,0,.5);
 }
 
 .categoryBtn.active{
   background:linear-gradient(180deg,#2563eb,#1e40af);
-  box-shadow:0 0 12px rgba(59,130,246,.6);
+  box-shadow:0 0 12px rgba(59,130,246,.7);
 }
 
 /* 商品カード */
 .card{
-  background:#020617;
-  border-radius:14px;
-  padding:10px;
-  margin:10px 0;
+  background:linear-gradient(180deg,#020617,#030712);
+  border-radius:16px;
+  padding:12px;
+  margin:12px 0;
   cursor:pointer;
-  transition:.2s;
-  box-shadow:0 8px 18px rgba(0,0,0,.45);
+  transition:.25s;
+  box-shadow:
+    0 10px 24px rgba(0,0,0,.55),
+    inset 0 0 0 1px rgba(255,255,255,.04);
 }
 
 .card:hover{
-  transform:translateY(-3px);
-  background:#111827;
+  transform:translateY(-4px) scale(1.02);
+  box-shadow:
+    0 16px 36px rgba(0,0,0,.7),
+    0 0 12px rgba(59,130,246,.35);
 }
 
 .card img{
@@ -70,21 +88,31 @@ body{
   margin-bottom:8px;
 }
 
+/* 検索 */
 input{
   width:100%;
   padding:10px;
   border-radius:12px;
   border:none;
-  margin:8px 0;
+  margin:10px 0;
   background:#020617;
   color:white;
+  outline:none;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);
 }
 
+/* スマホ */
 @media (max-width:700px){
-  .container{ flex-direction:column; height:auto; }
-  .detail{ display:none; }
+  .container{
+    flex-direction:column;
+    height:auto;
+  }
+  .detail{
+    display:none;
+  }
 }
 
+/* モーダル */
 .modal{
   position:fixed;
   top:0;
@@ -104,6 +132,11 @@ input{
 }
 
 a{ color:#60a5fa; word-break:break-all; }
+
+h3{
+  margin-top:0;
+  font-weight:600;
+}
 
 </style>
 </head>
@@ -212,21 +245,16 @@ function renderCategories(){
   });
 }
 
-/* カテゴリ監視 */
+/* Firestore */
 onSnapshot(query(collection(db,"categories"),orderBy("order")), snap=>{
   categories=[];
-  snap.forEach(d=>{
-    categories.push(d.data());
-  });
+  snap.forEach(d=>categories.push(d.data()));
   renderCategories();
 });
 
-/* 商品監視 */
 onSnapshot(query(collection(db,"products"),orderBy("order")), snap=>{
   products=[];
-  snap.forEach(d=>{
-    products.push(d.data());
-  });
+  snap.forEach(d=>products.push(d.data()));
   renderProducts();
 });
 
