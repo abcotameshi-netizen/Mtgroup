@@ -32,11 +32,8 @@ body{
 .products{ width:320px; }
 .detail{ flex:1; overflow:auto; }
 
-/* カテゴリボタン */
+/* カテゴリ */
 .categoryBtn{
-  display:flex;
-  align-items:center;
-  gap:8px;
   width:100%;
   margin:6px 0;
   padding:10px;
@@ -46,7 +43,6 @@ body{
   transition:.2s;
 }
 
-/* 選択中 */
 .categoryBtn.active{
   background:linear-gradient(180deg,#2563eb,#1e40af);
   box-shadow:0 0 12px rgba(59,130,246,.6);
@@ -196,37 +192,7 @@ window.closeModal=function(){
   modal.style.display="none";
 }
 
-/* カテゴリ */
-onSnapshot(query(collection(db,"categories"),orderBy("order")), snap=>{
-  categories=[];
-  categoryList.innerHTML="";
-
-  snap.forEach(d=>{
-    categories.push(d.data());
-  });
-
-  categories.forEach(cat=>{
-    const btn=document.createElement("div");
-    btn.className="categoryBtn";
-
-    if(currentCategory===cat.name){
-      btn.classList.add("active");
-    }
-
-    const icon = cat.icon ? cat.icon : "📁";
-
-    btn.innerHTML=`<span>${icon}</span><span>${cat.name}</span>`;
-
-    btn.onclick=()=>{
-      currentCategory=cat.name;
-      renderProducts();
-      renderCategories(); // ハイライト更新
-    };
-
-    categoryList.appendChild(btn);
-  });
-});
-
+/* カテゴリ描画 */
 function renderCategories(){
   categoryList.innerHTML="";
   categories.forEach(cat=>{
@@ -234,8 +200,7 @@ function renderCategories(){
     btn.className="categoryBtn";
     if(currentCategory===cat.name) btn.classList.add("active");
 
-    const icon = cat.icon ? cat.icon : "📁";
-    btn.innerHTML=`<span>${icon}</span><span>${cat.name}</span>`;
+    btn.textContent=cat.name;
 
     btn.onclick=()=>{
       currentCategory=cat.name;
@@ -247,7 +212,16 @@ function renderCategories(){
   });
 }
 
-/* 商品 */
+/* カテゴリ監視 */
+onSnapshot(query(collection(db,"categories"),orderBy("order")), snap=>{
+  categories=[];
+  snap.forEach(d=>{
+    categories.push(d.data());
+  });
+  renderCategories();
+});
+
+/* 商品監視 */
 onSnapshot(query(collection(db,"products"),orderBy("order")), snap=>{
   products=[];
   snap.forEach(d=>{
@@ -256,7 +230,9 @@ onSnapshot(query(collection(db,"products"),orderBy("order")), snap=>{
   renderProducts();
 });
 
+/* 商品描画 */
 window.renderProducts=function(){
+
   const keyword=document.getElementById("searchBox").value.toLowerCase();
   productList.innerHTML="";
 
@@ -264,6 +240,7 @@ window.renderProducts=function(){
   .filter(p => (!currentCategory || p.category===currentCategory))
   .filter(p => p.name.toLowerCase().includes(keyword))
   .forEach(p=>{
+
     const card=document.createElement("div");
     card.className="card";
 
