@@ -69,6 +69,16 @@ h3{
   color:#f5d28c;
 }
 
+/* NEWマーク */
+.newBadge{
+  background:#ef4444;
+  color:white;
+  font-size:10px;
+  padding:2px 6px;
+  border-radius:6px;
+  margin-left:6px;
+}
+
 /* カテゴリ */
 .categoryBtn{
   width:100%;
@@ -92,7 +102,6 @@ h3{
   background:linear-gradient(#f5d28c,#caa24a);
 }
 
-/* 検索固定 */
 .searchArea{
   position:sticky;
   top:0;
@@ -106,7 +115,7 @@ h3{
   flex:1;
 }
 
-/* 横長カード */
+/* 横カード */
 .card{
   display:flex;
   gap:12px;
@@ -123,7 +132,6 @@ h3{
 
 .card:hover{
   transform:translateY(-2px);
-  box-shadow:0 14px 28px rgba(0,0,0,.8);
 }
 
 .card img{
@@ -138,7 +146,6 @@ h3{
   font-size:15px;
 }
 
-/* 入力 */
 input{
   width:100%;
   padding:10px;
@@ -148,13 +155,11 @@ input{
   color:#e5e7eb;
 }
 
-/* スマホ */
 @media (max-width:700px){
   .container{ flex-direction:column; height:auto; }
   .detail{ display:none; }
 }
 
-/* モーダル */
 .modal{
   position:fixed;
   top:0;
@@ -227,6 +232,11 @@ let categories=[];
 let products=[];
 let currentCategory=null;
 
+/* 最後に見た時間 */
+const LAST_VIEW_KEY="last_view_time";
+let lastViewTime = Number(localStorage.getItem(LAST_VIEW_KEY)||0);
+localStorage.setItem(LAST_VIEW_KEY, Date.now());
+
 const categoryList=document.getElementById("categoryList");
 const productList=document.getElementById("productList");
 const productDetail=document.getElementById("productDetail");
@@ -270,11 +280,6 @@ function renderCategories(){
   allBtn.className="categoryBtn";
   if(currentCategory===null) allBtn.classList.add("active");
   allBtn.textContent="すべて";
-  allBtn.onclick=()=>{
-    currentCategory=null;
-    renderProducts();
-    renderCategories();
-  };
   categoryList.appendChild(allBtn);
 
   categories.forEach(cat=>{
@@ -282,7 +287,10 @@ function renderCategories(){
     btn.className="categoryBtn";
     if(currentCategory===cat.name) btn.classList.add("active");
 
-    btn.textContent=cat.name;
+    btn.innerHTML = cat.name +
+      (cat.updatedAt && cat.updatedAt > lastViewTime
+        ? ' <span class="newBadge">NEW</span>' : '');
+
     btn.onclick=()=>{
       currentCategory=cat.name;
       renderProducts();
@@ -317,7 +325,11 @@ window.renderProducts=function(){
 
       card.innerHTML=`
         ${p.image?`<img src="${p.image}">`:""}
-        <div class="cardTitle">${p.name}</div>
+        <div class="cardTitle">
+          ${p.name}
+          ${p.updatedAt && p.updatedAt > lastViewTime
+            ? '<span class="newBadge">NEW</span>' : ''}
+        </div>
       `;
 
       card.onclick=()=>showProduct(p);
