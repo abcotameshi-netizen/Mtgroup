@@ -9,7 +9,6 @@
 
 *{ box-sizing:border-box; }
 
-/* 背景（暗め大理石） */
 body{
   margin:0;
   font-family:"Georgia", serif;
@@ -20,7 +19,6 @@ body{
     linear-gradient(180deg,#020617,#020617,#030712);
 }
 
-/* ヘッダー */
 .header{
   position:fixed;
   top:0;
@@ -42,7 +40,6 @@ body{
   color:#f5d28c;
 }
 
-/* レイアウト */
 .container{
   display:flex;
   max-width:1400px;
@@ -52,15 +49,15 @@ body{
   height:calc(100vh - 110px);
 }
 
-/* パネル */
 .panel{
-  position:relative;
   background:rgba(12,14,18,0.75);
   backdrop-filter:blur(14px);
   border-radius:14px;
   padding:16px;
   border:1px solid rgba(255,215,160,.25);
   box-shadow:0 20px 50px rgba(0,0,0,.85);
+  display:flex;
+  flex-direction:column;
 }
 
 .categories{ width:260px; }
@@ -72,31 +69,18 @@ h3{
   color:#f5d28c;
 }
 
-/* ===== カテゴリボタン ===== */
+/* カテゴリ */
 .categoryBtn{
   width:100%;
   margin:8px 0;
-  padding:12px 12px 12px 14px;
+  padding:12px;
   border-radius:10px;
   cursor:pointer;
-
   background:linear-gradient(180deg,#0b0f16,#020617);
   border:1px solid rgba(255,215,160,.12);
-
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-
   position:relative;
-  transition:.25s;
 }
 
-/* ホバー */
-.categoryBtn:hover{
-  box-shadow:0 0 12px rgba(255,215,160,.25);
-}
-
-/* 選択中の金バー */
 .categoryBtn.active::before{
   content:"";
   position:absolute;
@@ -106,39 +90,47 @@ h3{
   width:4px;
   border-radius:3px;
   background:linear-gradient(#f5d28c,#caa24a);
-  box-shadow:0 0 10px rgba(255,215,160,.6);
 }
 
-/* 商品グリッド */
-#productList{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:14px;
+/* 検索固定 */
+.searchArea{
+  position:sticky;
+  top:0;
+  background:rgba(12,14,18,0.95);
+  padding-bottom:10px;
+  z-index:2;
 }
 
-/* 商品カード */
+.productScroll{
+  overflow:auto;
+  flex:1;
+}
+
+/* 横長カード */
 .card{
+  display:flex;
+  gap:12px;
+  align-items:center;
   background:linear-gradient(180deg,#020617,#030712);
-  border-radius:14px;
-  padding:14px;
+  border-radius:12px;
+  padding:10px;
+  margin-bottom:12px;
   cursor:pointer;
-  text-align:center;
   border:1px solid rgba(255,215,160,.20);
-  box-shadow:0 14px 28px rgba(0,0,0,.8);
+  box-shadow:0 10px 20px rgba(0,0,0,.6);
   transition:.25s;
 }
 
 .card:hover{
-  transform:translateY(-4px);
-  box-shadow:
-    0 22px 40px rgba(0,0,0,.9),
-    0 0 14px rgba(255,215,160,.25);
+  transform:translateY(-2px);
+  box-shadow:0 14px 28px rgba(0,0,0,.8);
 }
 
 .card img{
-  width:100%;
-  border-radius:10px;
-  margin-bottom:8px;
+  width:72px;
+  height:72px;
+  object-fit:cover;
+  border-radius:8px;
 }
 
 .cardTitle{
@@ -146,7 +138,7 @@ h3{
   font-size:15px;
 }
 
-/* 検索 */
+/* 入力 */
 input{
   width:100%;
   padding:10px;
@@ -154,23 +146,12 @@ input{
   border:1px solid rgba(255,215,160,.20);
   background:#020617;
   color:#e5e7eb;
-  margin:10px 0;
 }
 
 /* スマホ */
 @media (max-width:700px){
-  .container{
-    flex-direction:column;
-    height:auto;
-  }
-
-  .detail{
-    display:none;
-  }
-
-  #productList{
-    grid-template-columns:1fr;
-  }
+  .container{ flex-direction:column; height:auto; }
+  .detail{ display:none; }
 }
 
 /* モーダル */
@@ -186,8 +167,6 @@ input{
   display:none;
   z-index:1000;
 }
-
-a{ color:#f5d28c; }
 
 </style>
 </head>
@@ -206,9 +185,16 @@ a{ color:#f5d28c; }
 </div>
 
 <div class="panel products">
+
+<div class="searchArea">
 <h3>製品</h3>
-<input id="searchBox" placeholder="商品検索" oninput="renderProducts()">
+<input id="searchBox" placeholder="商品検索" oninput="searchAll()">
+</div>
+
+<div class="productScroll">
 <div id="productList"></div>
+</div>
+
 </div>
 
 <div class="panel detail">
@@ -246,6 +232,12 @@ const productList=document.getElementById("productList");
 const productDetail=document.getElementById("productDetail");
 const modal=document.getElementById("mobileModal");
 
+function searchAll(){
+  currentCategory=null;
+  renderCategories();
+  renderProducts();
+}
+
 function linkify(text){
   if(!text) return "";
   let formatted=text.replace(/\n/g,"<br>");
@@ -273,6 +265,18 @@ window.closeModal=function(){ modal.style.display="none"; }
 
 function renderCategories(){
   categoryList.innerHTML="";
+
+  const allBtn=document.createElement("div");
+  allBtn.className="categoryBtn";
+  if(currentCategory===null) allBtn.classList.add("active");
+  allBtn.textContent="すべて";
+  allBtn.onclick=()=>{
+    currentCategory=null;
+    renderProducts();
+    renderCategories();
+  };
+  categoryList.appendChild(allBtn);
+
   categories.forEach(cat=>{
     const btn=document.createElement("div");
     btn.className="categoryBtn";
