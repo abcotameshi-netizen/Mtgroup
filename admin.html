@@ -11,7 +11,7 @@ button{margin:4px 2px;padding:6px 10px;background:#1f2937;color:#fff;border:none
 input, textarea, select{width:100%;margin:6px 0;padding:6px;}
 .panel{background:#111827;padding:12px;border-radius:8px;margin-bottom:20px;}
 .item{background:#1f2937;padding:8px;border-radius:6px;margin:6px 0;}
-.categoryHeader{background:#374151;padding:8px;border-radius:6px;margin-top:8px;}
+.categoryHeader{background:#374151;padding:10px;border-radius:6px;margin-top:8px;cursor:pointer;}
 .preview{margin-top:10px;padding:10px;background:#0f172a;border-radius:8px;display:none;}
 img{max-width:100%;border-radius:8px;margin-top:10px;}
 </style>
@@ -73,6 +73,7 @@ const LOGIN_DURATION=24*60*60*1000;
 
 let categories=[];
 let products=[];
+let openCategories={}; // 開閉状態
 
 const productList=document.getElementById("productList");
 const productCategory=document.getElementById("productCategory");
@@ -126,10 +127,6 @@ if(!category||!name) return;
 await addDoc(collection(db,"products"),{
 category,name,desc,image,order:Date.now()
 });
-
-document.getElementById("pName").value="";
-document.getElementById("pDesc").value="";
-document.getElementById("pImage").value="";
 }
 
 /* 商品編集 */
@@ -142,35 +139,12 @@ const image=prompt("画像URL",p.image||"");
 await updateDoc(doc(db,"products",id),{name,desc,image});
 }
 
-/* 商品削除 */
-window.deleteProduct=async function(id){
-if(confirm("削除しますか？")){
-await deleteDoc(doc(db,"products",id));
-}
-}
-
-/* 並び替え共通 */
+/* 並び替え */
 async function swapOrder(col,idA,orderA,idB,orderB){
 await updateDoc(doc(db,col,idA),{order:orderB});
 await updateDoc(doc(db,col,idB),{order:orderA});
 }
 
-/* 商品並び替え */
-window.moveProductUp=async function(id){
-const sorted=[...products].sort((a,b)=>a.order-b.order);
-const i=sorted.findIndex(p=>p.id===id);
-if(i<=0) return;
-await swapOrder("products",sorted[i].id,sorted[i].order,sorted[i-1].id,sorted[i-1].order);
-}
-
-window.moveProductDown=async function(id){
-const sorted=[...products].sort((a,b)=>a.order-b.order);
-const i=sorted.findIndex(p=>p.id===id);
-if(i===-1||i>=sorted.length-1) return;
-await swapOrder("products",sorted[i].id,sorted[i].order,sorted[i+1].id,sorted[i+1].order);
-}
-
-/* カテゴリ並び替え */
 window.moveCategoryUp=async function(id){
 const sorted=[...categories].sort((a,b)=>a.order-b.order);
 const i=sorted.findIndex(c=>c.id===id);
@@ -185,6 +159,20 @@ if(i===-1||i>=sorted.length-1) return;
 await swapOrder("categories",sorted[i].id,sorted[i].order,sorted[i+1].id,sorted[i+1].order);
 }
 
+window.moveProductUp=async function(id){
+const sorted=[...products].sort((a,b)=>a.order-b.order);
+const i=sorted.findIndex(p=>p.id===id);
+if(i<=0) return;
+await swapOrder("products",sorted[i].id,sorted[i].order,sorted[i-1].id,sorted[i-1].order);
+}
+
+window.moveProductDown=async function(id){
+const sorted=[...products].sort((a,b)=>a.order-b.order);
+const i=sorted.findIndex(p=>p.id===id);
+if(i===-1||i>=sorted.length-1) return;
+await swapOrder("products",sorted[i].id,sorted[i].order,sorted[i+1].id,sorted[i+1].order);
+}
+
 /* プレビュー */
 window.showPreview=function(p){
 productPreview.style.display="block";
@@ -196,7 +184,13 @@ ${p.image?`<img src="${p.image}">`:""}
 `;
 }
 
-/* カテゴリ監視 */
+/* カテゴリ開閉 */
+function toggleCategory(name){
+openCategories[name]=!openCategories[name];
+renderProducts();
+}
+
+/* Firestore監視 */
 onSnapshot(query(collection(db,"categories"),orderBy("order")),snap=>{
 categories=[];
 productCategory.innerHTML="";
@@ -214,7 +208,6 @@ productCategory.appendChild(opt);
 renderProducts();
 });
 
-/* 商品監視 */
 onSnapshot(query(collection(db,"products"),orderBy("order")),snap=>{
 products=[];
 snap.forEach(d=>{
@@ -227,19 +220,21 @@ renderProducts();
 function renderProducts(){
 productList.innerHTML="";
 
-categories
-.sort((a,b)=>a.order-b.order)
-.forEach(cat=>{
+categories.sort((a,b)=>a.order-b.order).forEach(cat=>{
 
 const header=document.createElement("div");
 header.className="categoryHeader";
 header.innerHTML=`
-${cat.name}
-<button onclick="moveCategoryUp('${cat.id}')">▲</button>
-<button onclick="moveCategoryDown('${cat.id}')">▼</button>
-<button onclick="editCategory('${cat.id}','${cat.name}')">編集</button>
+${openCategories[cat.name]?"▼":"▶"} ${cat.name}
+<button onclick="event.stopPropagation();moveCategoryUp('${cat.id}')">▲</button>
+<button onclick="event.stopPropagation();moveCategoryDown('${cat.id}')">▼</button>
+<button onclick="event.stopPropagation();editCategory('${cat.id}','${cat.name}')">編集</button>
 `;
+header.onclick=()=>toggleCategory(cat.name);
+
 productList.appendChild(header);
+
+if(!openCategories[cat.name]) return;
 
 products
 .filter(p=>p.category===cat.name)
@@ -259,6 +254,12 @@ productList.appendChild(div);
 });
 });
 }
+
+window.deleteProduct=async function(id){
+if(confirm("削除しますか？")){
+await deleteDoc(doc(db,"products",id));
+}
+};
 
 checkAutoLogin();
 
