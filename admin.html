@@ -73,7 +73,7 @@ const LOGIN_DURATION=24*60*60*1000;
 
 let categories=[];
 let products=[];
-let openCategories={}; // 開閉状態
+let openCategories={};
 
 const productList=document.getElementById("productList");
 const productCategory=document.getElementById("productCategory");
@@ -100,22 +100,29 @@ localStorage.removeItem(LOGIN_KEY);
 location.reload();
 }
 
-/* カテゴリ追加 */
+/* カテゴリ追加（updatedAt追加） */
 window.addCategory=async function(){
 const name=document.getElementById("catName").value.trim();
 if(!name) return;
-await addDoc(collection(db,"categories"),{name,order:Date.now()});
+await addDoc(collection(db,"categories"),{
+name,
+order:Date.now(),
+updatedAt:Date.now()
+});
 document.getElementById("catName").value="";
 }
 
-/* カテゴリ編集 */
+/* カテゴリ編集（updatedAt更新） */
 window.editCategory=async function(id,oldName){
 const newName=prompt("カテゴリ名を変更",oldName);
 if(newName===null || newName.trim()==="") return;
-await updateDoc(doc(db,"categories",id),{name:newName.trim()});
+await updateDoc(doc(db,"categories",id),{
+name:newName.trim(),
+updatedAt:Date.now()
+});
 }
 
-/* 商品追加 */
+/* 商品追加（updatedAt追加） */
 window.addProduct=async function(){
 const category=productCategory.value;
 const name=document.getElementById("pName").value.trim();
@@ -125,18 +132,29 @@ const image=document.getElementById("pImage").value;
 if(!category||!name) return;
 
 await addDoc(collection(db,"products"),{
-category,name,desc,image,order:Date.now()
+category,
+name,
+desc,
+image,
+order:Date.now(),
+updatedAt:Date.now()
 });
 }
 
-/* 商品編集 */
+/* 商品編集（updatedAt更新） */
 window.editProduct=async function(id,p){
 const name=prompt("商品名",p.name);
 if(name===null) return;
 const desc=prompt("説明",p.desc||"");
 if(desc===null) return;
 const image=prompt("画像URL",p.image||"");
-await updateDoc(doc(db,"products",id),{name,desc,image});
+
+await updateDoc(doc(db,"products",id),{
+name,
+desc,
+image,
+updatedAt:Date.now()
+});
 }
 
 /* 並び替え */
