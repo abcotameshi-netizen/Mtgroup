@@ -107,6 +107,13 @@ await addDoc(collection(db,"categories"),{name,order:Date.now()});
 document.getElementById("catName").value="";
 }
 
+/* カテゴリ編集 */
+window.editCategory=async function(id,oldName){
+const newName=prompt("カテゴリ名を変更",oldName);
+if(newName===null || newName.trim()==="") return;
+await updateDoc(doc(db,"categories",id),{name:newName.trim()});
+}
+
 /* 商品追加 */
 window.addProduct=async function(){
 const category=productCategory.value;
@@ -125,7 +132,7 @@ document.getElementById("pDesc").value="";
 document.getElementById("pImage").value="";
 }
 
-/* 編集 */
+/* 商品編集 */
 window.editProduct=async function(id,p){
 const name=prompt("商品名",p.name);
 if(name===null) return;
@@ -135,24 +142,47 @@ const image=prompt("画像URL",p.image||"");
 await updateDoc(doc(db,"products",id),{name,desc,image});
 }
 
-/* 並び替え */
-async function swapOrder(idA,orderA,idB,orderB){
-await updateDoc(doc(db,"products",idA),{order:orderB});
-await updateDoc(doc(db,"products",idB),{order:orderA});
+/* 商品削除 */
+window.deleteProduct=async function(id){
+if(confirm("削除しますか？")){
+await deleteDoc(doc(db,"products",id));
+}
 }
 
+/* 並び替え共通 */
+async function swapOrder(col,idA,orderA,idB,orderB){
+await updateDoc(doc(db,col,idA),{order:orderB});
+await updateDoc(doc(db,col,idB),{order:orderA});
+}
+
+/* 商品並び替え */
 window.moveProductUp=async function(id){
 const sorted=[...products].sort((a,b)=>a.order-b.order);
 const i=sorted.findIndex(p=>p.id===id);
 if(i<=0) return;
-await swapOrder(sorted[i].id,sorted[i].order,sorted[i-1].id,sorted[i-1].order);
+await swapOrder("products",sorted[i].id,sorted[i].order,sorted[i-1].id,sorted[i-1].order);
 }
 
 window.moveProductDown=async function(id){
 const sorted=[...products].sort((a,b)=>a.order-b.order);
 const i=sorted.findIndex(p=>p.id===id);
 if(i===-1||i>=sorted.length-1) return;
-await swapOrder(sorted[i].id,sorted[i].order,sorted[i+1].id,sorted[i+1].order);
+await swapOrder("products",sorted[i].id,sorted[i].order,sorted[i+1].id,sorted[i+1].order);
+}
+
+/* カテゴリ並び替え */
+window.moveCategoryUp=async function(id){
+const sorted=[...categories].sort((a,b)=>a.order-b.order);
+const i=sorted.findIndex(c=>c.id===id);
+if(i<=0) return;
+await swapOrder("categories",sorted[i].id,sorted[i].order,sorted[i-1].id,sorted[i-1].order);
+}
+
+window.moveCategoryDown=async function(id){
+const sorted=[...categories].sort((a,b)=>a.order-b.order);
+const i=sorted.findIndex(c=>c.id===id);
+if(i===-1||i>=sorted.length-1) return;
+await swapOrder("categories",sorted[i].id,sorted[i].order,sorted[i+1].id,sorted[i+1].order);
 }
 
 /* プレビュー */
@@ -193,14 +223,22 @@ products.push({id:d.id,...d.data()});
 renderProducts();
 });
 
-/* 表示 */
+/* 描画 */
 function renderProducts(){
 productList.innerHTML="";
 
-categories.forEach(cat=>{
+categories
+.sort((a,b)=>a.order-b.order)
+.forEach(cat=>{
+
 const header=document.createElement("div");
 header.className="categoryHeader";
-header.textContent=cat.name;
+header.innerHTML=`
+${cat.name}
+<button onclick="moveCategoryUp('${cat.id}')">▲</button>
+<button onclick="moveCategoryDown('${cat.id}')">▼</button>
+<button onclick="editCategory('${cat.id}','${cat.name}')">編集</button>
+`;
 productList.appendChild(header);
 
 products
@@ -221,12 +259,6 @@ productList.appendChild(div);
 });
 });
 }
-
-window.deleteProduct=async function(id){
-if(confirm("削除しますか？")){
-await deleteDoc(doc(db,"products",id));
-}
-};
 
 checkAutoLogin();
 
