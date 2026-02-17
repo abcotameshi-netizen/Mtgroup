@@ -11,16 +11,16 @@ button{margin:4px 2px;padding:6px 10px;background:#1f2937;color:#fff;border:none
 input, textarea, select{width:100%;margin:6px 0;padding:6px;}
 .panel{background:#111827;padding:12px;border-radius:8px;margin-bottom:20px;}
 .item{background:#1f2937;padding:8px;border-radius:6px;margin:6px 0;}
-.categoryHeader{background:#374151;padding:8px;border-radius:6px;cursor:pointer;margin-top:8px;}
+.categoryHeader{background:#374151;padding:8px;border-radius:6px;margin-top:8px;}
 .preview{margin-top:10px;padding:10px;background:#0f172a;border-radius:8px;display:none;}
 img{max-width:100%;border-radius:8px;margin-top:10px;}
-a{color:#60a5fa;}
 </style>
 </head>
 
 <body>
 
 <h2>管理画面</h2>
+
 <button onclick="login()">パスワード入力</button>
 <button onclick="logout()">ログアウト</button>
 
@@ -73,7 +73,6 @@ const LOGIN_DURATION=24*60*60*1000;
 
 let categories=[];
 let products=[];
-let openCategories={};
 
 const productList=document.getElementById("productList");
 const productCategory=document.getElementById("productCategory");
@@ -102,7 +101,7 @@ location.reload();
 
 /* カテゴリ追加 */
 window.addCategory=async function(){
-const name=document.getElementById("catName").value;
+const name=document.getElementById("catName").value.trim();
 if(!name) return;
 await addDoc(collection(db,"categories"),{name,order:Date.now()});
 document.getElementById("catName").value="";
@@ -111,7 +110,7 @@ document.getElementById("catName").value="";
 /* 商品追加 */
 window.addProduct=async function(){
 const category=productCategory.value;
-const name=document.getElementById("pName").value;
+const name=document.getElementById("pName").value.trim();
 const desc=document.getElementById("pDesc").value;
 const image=document.getElementById("pImage").value;
 
@@ -120,6 +119,10 @@ if(!category||!name) return;
 await addDoc(collection(db,"products"),{
 category,name,desc,image,order:Date.now()
 });
+
+document.getElementById("pName").value="";
+document.getElementById("pDesc").value="";
+document.getElementById("pImage").value="";
 }
 
 /* 編集 */
@@ -163,27 +166,47 @@ ${p.image?`<img src="${p.image}">`:""}
 `;
 }
 
-/* Firestore監視 */
+/* カテゴリ監視 */
 onSnapshot(query(collection(db,"categories"),orderBy("order")),snap=>{
 categories=[];
 productCategory.innerHTML="";
+
 snap.forEach(d=>{
 const data={id:d.id,...d.data()};
 categories.push(data);
+
 const opt=document.createElement("option");
 opt.value=data.name;
 opt.textContent=data.name;
 productCategory.appendChild(opt);
 });
+
+renderProducts();
 });
 
+/* 商品監視 */
 onSnapshot(query(collection(db,"products"),orderBy("order")),snap=>{
 products=[];
-productList.innerHTML="";
 snap.forEach(d=>{
-const p={id:d.id,...d.data()};
-products.push(p);
+products.push({id:d.id,...d.data()});
+});
+renderProducts();
+});
 
+/* 表示 */
+function renderProducts(){
+productList.innerHTML="";
+
+categories.forEach(cat=>{
+const header=document.createElement("div");
+header.className="categoryHeader";
+header.textContent=cat.name;
+productList.appendChild(header);
+
+products
+.filter(p=>p.category===cat.name)
+.sort((a,b)=>a.order-b.order)
+.forEach(p=>{
 const div=document.createElement("div");
 div.className="item";
 div.innerHTML=`
@@ -197,6 +220,7 @@ ${p.name}
 productList.appendChild(div);
 });
 });
+}
 
 window.deleteProduct=async function(id){
 if(confirm("削除しますか？")){
