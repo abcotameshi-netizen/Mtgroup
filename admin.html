@@ -2,10 +2,8 @@
 
 <html lang="ja">
 <head>
-
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 <title>管理画面</title>
 
 <style>
@@ -51,9 +49,7 @@ cursor:pointer;
 }
 
 </style>
-
 </head>
-
 
 <body>
 
@@ -62,12 +58,8 @@ cursor:pointer;
 <button onclick="login()">パスワード入力</button>
 <button onclick="logout()">ログアウト</button>
 
-
-
 <div id="mainPanel" style="display:none;">
 
-
-<!-- 商品追加 -->
 
 <div class="panel">
 
@@ -76,25 +68,20 @@ cursor:pointer;
 <select id="productCategory"></select>
 
 <input id="pName" placeholder="商品名">
-
 <input id="pImage" placeholder="画像URL">
-
 <input id="pVideo" placeholder="YouTube動画URL">
 
 <textarea id="pDesc" placeholder="説明"></textarea>
 
 <select id="pTag">
-
 <option value="">タグなし</option>
 <option value="人気">人気</option>
 <option value="更新">更新</option>
-
 </select>
 
 <button onclick="addProduct()">
 商品追加
 </button>
-
 
 <hr>
 
@@ -103,15 +90,11 @@ cursor:pointer;
 </div>
 
 
-
-<!-- カテゴリ追加 -->
-
 <div class="panel">
 
 <h3>カテゴリ追加</h3>
 
 <input id="catName">
-
 <input id="catImage" placeholder="カテゴリ画像URL">
 
 <button onclick="addCategory()">
@@ -121,8 +104,6 @@ cursor:pointer;
 </div>
 
 
-
-<!-- フォント設定 -->
 
 <div class="panel">
 
@@ -144,15 +125,12 @@ cursor:pointer;
 
 </div>
 
-
 </div>
-
 
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-
 import {
 getFirestore,
 collection,
@@ -168,22 +146,22 @@ from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 
 const firebaseConfig={
-
 apiKey:"AIzaSyAii9UA3YBztj3XE8QErStcf-TpIkFJYWQ",
 authDomain:"mtgroup-df495.firebaseapp.com",
 projectId:"mtgroup-df495",
 storageBucket:"mtgroup-df495.firebasestorage.app",
 messagingSenderId:"33007954637",
 appId:"1:33007954637:web:0a1c249df6764f8d855784"
-
 };
 
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
+
 const ADMIN_PASSWORD="1234";
 const LOGIN_KEY="admin_login_time";
 const LOGIN_DURATION=24*60*60*1000;
+
 
 let categories=[];
 let products=[];
@@ -191,6 +169,7 @@ let openCategories={};
 
 const productList=document.getElementById("productList");
 const productCategory=document.getElementById("productCategory");
+
 
 window.saveFont=function(){
 localStorage.setItem("siteFont",
@@ -202,8 +181,9 @@ alert("保存しました");
 function checkAutoLogin(){
 const t=localStorage.getItem(LOGIN_KEY);
 if(t && Date.now()-t<LOGIN_DURATION)
-document.getElementById("mainPanel").style.display="block";
+mainPanel.style.display="block";
 }
+
 
 window.login=function(){
 if(prompt("パスワード")==ADMIN_PASSWORD){
@@ -212,13 +192,14 @@ mainPanel.style.display="block";
 }
 }
 
+
 window.logout=function(){
 localStorage.removeItem(LOGIN_KEY);
 location.reload();
 }
 
 
-/* カテゴリ追加（画像付き） */
+/* カテゴリ追加 */
 
 window.addCategory=async function(){
 
@@ -238,10 +219,11 @@ updatedAt:Date.now()
 
 catName.value="";
 catImage.value="";
+
 }
 
 
-/* カテゴリ編集 */
+/* カテゴリ編集削除並び替え */
 
 window.editCategory=cat=>{
 
@@ -261,15 +243,38 @@ updatedAt:Date.now()
 }
 
 
-/* カテゴリ削除 */
-
 window.deleteCategory=id=>{
+if(confirm("カテゴリ削除しますか"))
+deleteDoc(doc(db,"categories",id))
+}
 
-if(confirm("カテゴリ削除しますか？"))
-deleteDoc(doc(db,"categories",id));
+
+window.moveCategoryUp=async id=>{
+
+const s=[...categories].sort((a,b)=>a.order-b.order);
+
+const i=s.findIndex(c=>c.id===id);
+
+if(i<=0)return;
+
+updateDoc(doc(db,"categories",s[i].id),{order:s[i-1].order});
+updateDoc(doc(db,"categories",s[i-1].id),{order:s[i].order});
 
 }
 
+
+window.moveCategoryDown=async id=>{
+
+const s=[...categories].sort((a,b)=>a.order-b.order);
+
+const i=s.findIndex(c=>c.id===id);
+
+if(i>=s.length-1)return;
+
+updateDoc(doc(db,"categories",s[i].id),{order:s[i+1].order});
+updateDoc(doc(db,"categories",s[i+1].id),{order:s[i].order});
+
+}
 
 
 /* 商品追加 */
@@ -297,16 +302,17 @@ pName.value="";
 pDesc.value="";
 pImage.value="";
 pVideo.value="";
+
 }
 
 
-
-/* 編集削除 */
+/* 商品編集削除 */
 
 window.deleteProduct=id=>{
 if(confirm("削除しますか"))
 deleteDoc(doc(db,"products",id))
 }
+
 
 window.editProduct=p=>{
 
@@ -327,7 +333,7 @@ updatedAt:Date.now()
 }
 
 
-/* 並び替え（完全維持） */
+/* 商品並び替え */
 
 window.moveProductUp=async id=>{
 const s=[...products].sort((a,b)=>a.order-b.order);
@@ -346,11 +352,14 @@ updateDoc(doc(db,"products",s[i+1].id),{order:s[i].order});
 }
 
 
-/* カテゴリ折りたたみ */
+/* 折りたたみ */
 
 function toggleCategory(name){
+
 openCategories[name]=!openCategories[name];
+
 renderProducts();
+
 }
 
 
@@ -408,6 +417,9 @@ header.innerHTML=`
 
 ${openCategories[cat.name]?"▼":"▶"} ${cat.name}
 
+<button onclick="moveCategoryUp('${cat.id}')">▲</button>
+<button onclick="moveCategoryDown('${cat.id}')">▼</button>
+
 <button onclick='editCategory(${JSON.stringify(cat)})'>編集</button>
 
 <button onclick="deleteCategory('${cat.id}')">削除</button>
@@ -448,6 +460,7 @@ productList.appendChild(div);
 });
 
 }
+
 
 checkAutoLogin()
 
