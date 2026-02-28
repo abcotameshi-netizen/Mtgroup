@@ -26,16 +26,13 @@ img{max-width:100%;border-radius:8px;margin-top:10px;}
 
 <div id="mainPanel" style="display:none;">
 
-<!-- フォント設定 -->
+
+<!-- ★フォント設定追加 -->
 <div class="panel">
 
 <h3>サイトフォント設定</h3>
 
 <select id="fontSelect">
-
-<option value='"Georgia",serif'>
-現在のフォント（Georgia）
-</option>
 
 <option value="system-ui">
 標準フォント
@@ -62,6 +59,7 @@ M PLUS
 <button onclick="saveFont()">フォント保存</button>
 
 </div>
+
 
 
 <div class="panel">
@@ -126,7 +124,7 @@ const productList=document.getElementById("productList");
 const productCategory=document.getElementById("productCategory");
 
 
-/* フォント保存 */
+/* ★フォント保存追加 */
 
 window.saveFont=function(){
 
@@ -137,6 +135,7 @@ localStorage.setItem("siteFont",font);
 alert("フォント保存しました");
 
 }
+
 
 
 /* ログイン */
@@ -164,6 +163,205 @@ location.reload();
 }
 
 
+/* カテゴリ追加 */
+
+window.addCategory=async function(){
+const name=document.getElementById("catName").value.trim();
+if(!name) return;
+
+await addDoc(collection(db,"categories"),{
+name,
+order:Date.now(),
+updatedAt:Date.now()
+});
+
+document.getElementById("catName").value="";
+}
+
+
+/* カテゴリ編集 */
+
+window.editCategory=async function(id,oldName){
+
+const newName=prompt("カテゴリ名を変更",oldName);
+
+if(newName===null || newName.trim()==="") return;
+
+await updateDoc(doc(db,"categories",id),{
+name:newName.trim(),
+updatedAt:Date.now()
+});
+
+}
+
+
+/* カテゴリ削除 */
+
+window.deleteCategory=async function(id){
+if(confirm("カテゴリを削除しますか？（中の商品は残ります）")){
+await deleteDoc(doc(db,"categories",id));
+}
+}
+
+
+/* 商品追加 */
+
+window.addProduct=async function(){
+
+const category=productCategory.value;
+
+const name=document.getElementById("pName").value.trim();
+
+const desc=document.getElementById("pDesc").value;
+
+const image=document.getElementById("pImage").value;
+
+const tag=document.getElementById("pTag").value;
+
+if(!category || !name){
+alert("カテゴリと商品名は必須です");
+return;
+}
+
+await addDoc(collection(db,"products"),{
+
+category,
+name,
+desc,
+image,
+tag,
+order:Date.now(),
+updatedAt:Date.now()
+
+});
+
+document.getElementById("pName").value="";
+document.getElementById("pDesc").value="";
+document.getElementById("pImage").value="";
+}
+
+
+/* 商品削除 */
+
+window.deleteProduct=async function(id){
+
+if(confirm("削除しますか？")){
+await deleteDoc(doc(db,"products",id));
+}
+
+}
+
+
+/* 商品編集 */
+
+window.editProduct=async function(p){
+
+const name=prompt("商品名",p.name);
+if(name===null) return;
+
+const desc=prompt("説明",p.desc||"");
+if(desc===null) return;
+
+const image=prompt("画像URL",p.image||"");
+if(image===null) return;
+
+const tag=prompt("タグ (人気 / 更新)",p.tag||"");
+
+await updateDoc(doc(db,"products",p.id),{
+
+name,
+desc,
+image,
+tag,
+updatedAt:Date.now()
+
+});
+
+}
+
+
+/* 並び替え共通 */
+
+async function swapOrder(col,idA,orderA,idB,orderB){
+
+await updateDoc(doc(db,col,idA),{order:orderB});
+await updateDoc(doc(db,col,idB),{order:orderA});
+
+}
+
+
+/* カテゴリ並び替え */
+
+window.moveCategoryUp=async function(id){
+
+const sorted=[...categories].sort((a,b)=>a.order-b.order);
+
+const i=sorted.findIndex(c=>c.id===id);
+
+if(i<=0) return;
+
+await swapOrder("categories",
+sorted[i].id,
+sorted[i].order,
+sorted[i-1].id,
+sorted[i-1].order);
+
+}
+
+
+window.moveCategoryDown=async function(id){
+
+const sorted=[...categories].sort((a,b)=>a.order-b.order);
+
+const i=sorted.findIndex(c=>c.id===id);
+
+if(i>=sorted.length-1) return;
+
+await swapOrder("categories",
+sorted[i].id,
+sorted[i].order,
+sorted[i+1].id,
+sorted[i+1].order);
+
+}
+
+
+/* 商品並び替え */
+
+window.moveProductUp=async function(id){
+
+const sorted=[...products].sort((a,b)=>a.order-b.order);
+
+const i=sorted.findIndex(p=>p.id===id);
+
+if(i<=0) return;
+
+await swapOrder("products",
+sorted[i].id,
+sorted[i].order,
+sorted[i-1].id,
+sorted[i-1].order);
+
+}
+
+
+window.moveProductDown=async function(id){
+
+const sorted=[...products].sort((a,b)=>a.order-b.order);
+
+const i=sorted.findIndex(p=>p.id===id);
+
+if(i>=sorted.length-1) return;
+
+await swapOrder("products",
+sorted[i].id,
+sorted[i].order,
+sorted[i+1].id,
+sorted[i+1].order);
+
+}
+
+
 /* Firestore監視 */
 
 onSnapshot(query(collection(db,"categories"),orderBy("order")),snap=>{
@@ -184,7 +382,97 @@ productCategory.appendChild(opt);
 
 });
 
+renderProducts();
+
 });
+
+
+onSnapshot(query(collection(db,"products"),orderBy("order")),snap=>{
+
+products=[];
+
+snap.forEach(d=>{
+products.push({id:d.id,...d.data()});
+});
+
+renderProducts();
+
+});
+
+
+function renderProducts(){
+
+productList.innerHTML="";
+
+categories
+.sort((a,b)=>a.order-b.order)
+.forEach(cat=>{
+
+const header=document.createElement("div");
+
+header.className="categoryHeader";
+
+header.innerHTML=`
+
+${openCategories[cat.name]?"▼":"▶"} ${cat.name}
+
+<button onclick="event.stopPropagation();moveCategoryUp('${cat.id}')">▲</button>
+
+<button onclick="event.stopPropagation();moveCategoryDown('${cat.id}')">▼</button>
+
+<button onclick="event.stopPropagation();editCategory('${cat.id}','${cat.name}')">編集</button>
+
+<button onclick="event.stopPropagation();deleteCategory('${cat.id}')">削除</button>
+
+`;
+
+header.onclick=()=>toggleCategory(cat.name);
+
+productList.appendChild(header);
+
+
+if(!openCategories[cat.name]) return;
+
+
+products
+.filter(p=>p.category===cat.name)
+.sort((a,b)=>a.order-b.order)
+.forEach(p=>{
+
+const div=document.createElement("div");
+
+div.className="item";
+
+div.innerHTML=`
+
+${p.name}
+
+<button onclick="moveProductUp('${p.id}')">▲</button>
+
+<button onclick="moveProductDown('${p.id}')">▼</button>
+
+<button onclick='editProduct(${JSON.stringify(p)})'>編集</button>
+
+<button onclick="deleteProduct('${p.id}')">削除</button>
+
+`;
+
+productList.appendChild(div);
+
+});
+
+});
+
+}
+
+
+function toggleCategory(name){
+
+openCategories[name]=!openCategories[name];
+
+renderProducts();
+
+}
 
 checkAutoLogin();
 
