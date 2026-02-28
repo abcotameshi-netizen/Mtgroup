@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>製品一覧</title>
 
+<!-- ★フォント読み込み追加 -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p&display=swap" rel="stylesheet">
+
 <style>
 *{ box-sizing:border-box; }
 
@@ -63,7 +68,6 @@ body{
 
 h3{ margin-top:0; color:#f5d28c; }
 
-/* バッジ */
 .badge{
   font-size:10px;
   padding:2px 6px;
@@ -76,7 +80,6 @@ h3{ margin-top:0; color:#f5d28c; }
 .badge-hot{ background:#f59e0b; }
 .badge-update{ background:#3b82f6; }
 
-/* Contents */
 .categoryBtn{
   width:100%;
   margin:8px 0;
@@ -110,7 +113,6 @@ h3{ margin-top:0; color:#f5d28c; }
   flex:1;
 }
 
-/* 商品カード */
 .card{
   display:flex;
   gap:12px;
@@ -207,12 +209,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey:"AIzaSyAii9UA3YBztj3XE8QErStcf-TpIkFJYWQ",
-  authDomain:"mtgroup-df495.firebaseapp.com",
-  projectId:"mtgroup-df495",
-  storageBucket:"mtgroup-df495.firebasestorage.app",
-  messagingSenderId:"33007954637",
-  appId:"1:33007954637:web:0a1c249df6764f8d855784"
+apiKey:"AIzaSyAii9UA3YBztj3XE8QErStcf-TpIkFJYWQ",
+authDomain:"mtgroup-df495.firebaseapp.com",
+projectId:"mtgroup-df495",
+storageBucket:"mtgroup-df495.firebasestorage.app",
+messagingSenderId:"33007954637",
+appId:"1:33007954637:web:0a1c249df6764f8d855784"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -222,18 +224,17 @@ let categories=[];
 let products=[];
 let currentCategory=null;
 
-/* NEW表示48時間 */
 const NEW_LIMIT = 48*60*60*1000;
+
 function isNew(updatedAt){
-  return updatedAt && (Date.now()-updatedAt < NEW_LIMIT);
+return updatedAt && (Date.now()-updatedAt < NEW_LIMIT);
 }
 
-/* タグ表示 */
 function tagBadge(tag){
-  if(!tag) return "";
-  if(tag==="人気") return '<span class="badge badge-hot">人気</span>';
-  if(tag==="更新") return '<span class="badge badge-update">更新</span>';
-  return `<span class="badge">${tag}</span>`;
+if(!tag) return "";
+if(tag==="人気") return '<span class="badge badge-hot">人気</span>';
+if(tag==="更新") return '<span class="badge badge-update">更新</span>';
+return `<span class="badge">${tag}</span>`;
 }
 
 const categoryList=document.getElementById("categoryList");
@@ -242,104 +243,155 @@ const productDetail=document.getElementById("productDetail");
 const modal=document.getElementById("mobileModal");
 
 function searchAll(){
-  currentCategory=null;
-  renderCategories();
-  renderProducts();
+currentCategory=null;
+renderCategories();
+renderProducts();
 }
 
 function linkify(text){
-  if(!text) return "";
-  let formatted=text.replace(/\n/g,"<br>");
-  formatted=formatted.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank">$1</a>');
-  return formatted;
+if(!text) return "";
+let formatted=text.replace(/\n/g,"<br>");
+formatted=formatted.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank">$1</a>');
+return formatted;
 }
 
 function isMobile(){ return window.innerWidth<=700; }
 
 function showProduct(p){
-  const html=`
-    <h3>${p.name}</h3>
-    <p>${linkify(p.desc)}</p>
-    ${p.image?`<img src="${p.image}" style="max-width:100%;border-radius:8px;">`:""}
-  `;
-  if(isMobile()){
-    modal.style.display="block";
-    modal.innerHTML=`<button onclick="closeModal()">← 戻る</button>${html}`;
-  }else{
-    productDetail.innerHTML=html;
-  }
+
+const html=`
+<h3>${p.name}</h3>
+<p>${linkify(p.desc)}</p>
+${p.image?`<img src="${p.image}" style="max-width:100%;border-radius:8px;">`:""}
+`;
+
+if(isMobile()){
+modal.style.display="block";
+modal.innerHTML=`<button onclick="closeModal()">← 戻る</button>${html}`;
+}else{
+productDetail.innerHTML=html;
 }
 
-window.closeModal=function(){ modal.style.display="none"; }
+}
+
+window.closeModal=function(){
+modal.style.display="none";
+}
 
 function renderCategories(){
-  categoryList.innerHTML="";
 
-  const allBtn=document.createElement("div");
-  allBtn.className="categoryBtn";
-  if(currentCategory===null) allBtn.classList.add("active");
-  allBtn.textContent="すべて";
-  allBtn.onclick=()=>{
-    currentCategory=null;
-    renderProducts();
-    renderCategories();
-  };
-  categoryList.appendChild(allBtn);
+categoryList.innerHTML="";
 
-  categories.forEach(cat=>{
-    const btn=document.createElement("div");
-    btn.className="categoryBtn";
-    if(currentCategory===cat.name) btn.classList.add("active");
+const allBtn=document.createElement("div");
 
-    btn.innerHTML = cat.name +
-      (isNew(cat.updatedAt) ? ' <span class="badge badge-new">NEW</span>' : '');
+allBtn.className="categoryBtn";
 
-    btn.onclick=()=>{
-      currentCategory=cat.name;
-      renderProducts();
-      renderCategories();
-    };
+if(currentCategory===null)
+allBtn.classList.add("active");
 
-    categoryList.appendChild(btn);
-  });
+allBtn.textContent="すべて";
+
+allBtn.onclick=()=>{
+currentCategory=null;
+renderProducts();
+renderCategories();
+};
+
+categoryList.appendChild(allBtn);
+
+categories.forEach(cat=>{
+
+const btn=document.createElement("div");
+
+btn.className="categoryBtn";
+
+if(currentCategory===cat.name)
+btn.classList.add("active");
+
+btn.innerHTML=
+cat.name+
+(isNew(cat.updatedAt)?' <span class="badge badge-new">NEW</span>':"");
+
+btn.onclick=()=>{
+currentCategory=cat.name;
+renderProducts();
+renderCategories();
+};
+
+categoryList.appendChild(btn);
+
+});
+
 }
 
 onSnapshot(query(collection(db,"categories"),orderBy("order")), snap=>{
-  categories=[];
-  snap.forEach(d=>categories.push(d.data()));
-  renderCategories();
+
+categories=[];
+
+snap.forEach(d=>categories.push(d.data()));
+
+renderCategories();
+
 });
 
 onSnapshot(query(collection(db,"products"),orderBy("order")), snap=>{
-  products=[];
-  snap.forEach(d=>products.push(d.data()));
-  renderProducts();
+
+products=[];
+
+snap.forEach(d=>products.push(d.data()));
+
+renderProducts();
+
 });
 
 window.renderProducts=function(){
-  const keyword=document.getElementById("searchBox").value.toLowerCase();
-  productList.innerHTML="";
 
-  products
-    .filter(p => (!currentCategory || p.category===currentCategory))
-    .filter(p => p.name.toLowerCase().includes(keyword))
-    .forEach(p=>{
-      const card=document.createElement("div");
-      card.className="card";
+const keyword=document.getElementById("searchBox").value.toLowerCase();
 
-      card.innerHTML=`
-        ${p.image?`<img src="${p.image}">`:""}
-        <div class="cardTitle">
-          ${p.name}
-          ${tagBadge(p.tag)}
-          ${isNew(p.updatedAt) ? '<span class="badge badge-new">NEW</span>' : ''}
-        </div>
-      `;
+productList.innerHTML="";
 
-      card.onclick=()=>showProduct(p);
-      productList.appendChild(card);
-    });
+products
+.filter(p => (!currentCategory || p.category===currentCategory))
+.filter(p => p.name.toLowerCase().includes(keyword))
+.forEach(p=>{
+
+const card=document.createElement("div");
+
+card.className="card";
+
+card.innerHTML=`
+${p.image?`<img src="${p.image}">`:""}
+<div class="cardTitle">
+${p.name}
+${tagBadge(p.tag)}
+${isNew(p.updatedAt)?'<span class="badge badge-new">NEW</span>':""}
+</div>
+`;
+
+card.onclick=()=>showProduct(p);
+
+productList.appendChild(card);
+
+});
+
 }
+
 </script>
+
+
+<!-- ★フォント反映機能追加 -->
+<script>
+
+const font=localStorage.getItem("siteFont");
+
+if(font){
+
+document.body.style.fontFamily=font;
+
+}
+
+</script>
+
+
 </body>
 </html>
