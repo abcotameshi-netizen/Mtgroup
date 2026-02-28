@@ -11,9 +11,6 @@ button{margin:4px 2px;padding:6px 10px;background:#1f2937;color:#fff;border:none
 input, textarea, select{width:100%;margin:6px 0;padding:6px;}
 .panel{background:#111827;padding:12px;border-radius:8px;margin-bottom:20px;}
 .item{background:#1f2937;padding:8px;border-radius:6px;margin:6px 0;}
-.categoryHeader{background:#374151;padding:10px;border-radius:6px;margin-top:8px;cursor:pointer;}
-.preview{margin-top:10px;padding:10px;background:#0f172a;border-radius:8px;display:none;}
-img{max-width:100%;border-radius:8px;margin-top:10px;}
 </style>
 </head>
 
@@ -26,407 +23,81 @@ img{max-width:100%;border-radius:8px;margin-top:10px;}
 
 <div id="mainPanel" style="display:none;">
 
+<!-- フォント設定 -->
 <div class="panel">
-<h3>カテゴリ追加</h3>
-<input id="catName" placeholder="カテゴリ名">
-<button onclick="addCategory()">カテゴリ追加</button>
-</div>
 
-<div class="panel">
-<h3>商品追加</h3>
+<h3>フォント設定</h3>
 
-<select id="productCategory"></select>
-<input id="pName" placeholder="商品名">
-<input id="pImage" placeholder="画像URL">
-<textarea id="pDesc" placeholder="説明"></textarea>
+<select id="fontSelect">
 
-<select id="pTag">
-<option value="">タグなし</option>
-<option value="人気">人気</option>
-<option value="更新">更新</option>
+<option value="'Georgia', serif">
+標準フォント
+</option>
+
+<option value="'Noto Sans JP', sans-serif">
+Noto Sans
+</option>
+
+<option value="Arial, sans-serif">
+Arial
+</option>
+
+<option value="'Orbitron', sans-serif">
+Orbitron
+</option>
+
+<option value="'M PLUS 1p', sans-serif">
+M PLUS
+</option>
+
 </select>
 
-<button onclick="addProduct()">商品追加</button>
-
-<hr>
-
-<div id="productList"></div>
-<div id="productPreview" class="preview"></div>
+<button onclick="saveFont()">保存</button>
 
 </div>
+
+
 </div>
 
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-getFirestore, collection, addDoc, deleteDoc, doc,
-updateDoc, onSnapshot, query, orderBy
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const firebaseConfig = {
-apiKey:"AIzaSyAii9UA3YBztj3XE8QErStcf-TpIkFJYWQ",
-authDomain:"mtgroup-df495.firebaseapp.com",
-projectId:"mtgroup-df495",
-storageBucket:"mtgroup-df495.firebasestorage.app",
-messagingSenderId:"33007954637",
-appId:"1:33007954637:web:0a1c249df6764f8d855784"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+<script>
 
 const ADMIN_PASSWORD="1234";
-const LOGIN_KEY="admin_login_time";
-const LOGIN_DURATION=24*60*60*1000;
 
-let categories=[];
-let products=[];
-let openCategories={};
+function login(){
 
-const productList=document.getElementById("productList");
-const productCategory=document.getElementById("productCategory");
-
-/* ログイン */
-
-function checkAutoLogin(){
-const t=localStorage.getItem(LOGIN_KEY);
-if(t && Date.now()-t<LOGIN_DURATION){
-document.getElementById("mainPanel").style.display="block";
-}
-}
-
-window.login=function(){
 const pass=prompt("パスワード");
+
 if(pass===ADMIN_PASSWORD){
-localStorage.setItem(LOGIN_KEY,Date.now());
+
 document.getElementById("mainPanel").style.display="block";
+
 }else{
-alert("パスワードが違います");
-}
+
+alert("違います");
+
 }
 
-window.logout=function(){
-localStorage.removeItem(LOGIN_KEY);
+}
+
+function logout(){
+
 location.reload();
-}
-
-
-/* カテゴリ追加 */
-
-window.addCategory=async function(){
-const name=document.getElementById("catName").value.trim();
-if(!name) return;
-
-await addDoc(collection(db,"categories"),{
-name,
-order:Date.now(),
-updatedAt:Date.now()
-});
-
-document.getElementById("catName").value="";
-}
-
-
-/* カテゴリ編集 */
-
-window.editCategory=async function(id,oldName){
-
-const newName=prompt("カテゴリ名を変更",oldName);
-
-if(newName===null || newName.trim()==="") return;
-
-await updateDoc(doc(db,"categories",id),{
-name:newName.trim(),
-updatedAt:Date.now()
-});
 
 }
 
 
-/* カテゴリ削除 */
+function saveFont(){
 
-window.deleteCategory=async function(id){
-if(confirm("カテゴリを削除しますか？（中の商品は残ります）")){
-await deleteDoc(doc(db,"categories",id));
-}
-}
+const font=
+document.getElementById("fontSelect").value;
 
+localStorage.setItem("siteFont",font);
 
-/* 商品追加 */
-
-window.addProduct=async function(){
-
-const category=productCategory.value;
-
-const name=document.getElementById("pName").value.trim();
-
-const desc=document.getElementById("pDesc").value;
-
-const image=document.getElementById("pImage").value;
-
-const tag=document.getElementById("pTag").value;
-
-if(!category || !name){
-alert("カテゴリと商品名は必須です");
-return;
-}
-
-await addDoc(collection(db,"products"),{
-
-category,
-name,
-desc,
-image,
-tag,
-order:Date.now(),
-updatedAt:Date.now()
-
-});
-
-document.getElementById("pName").value="";
-document.getElementById("pDesc").value="";
-document.getElementById("pImage").value="";
-}
-
-
-/* 商品削除 */
-
-window.deleteProduct=async function(id){
-
-if(confirm("削除しますか？")){
-await deleteDoc(doc(db,"products",id));
-}
+alert("フォント保存しました");
 
 }
-
-
-/* 商品編集 ←追加機能 */
-
-window.editProduct=async function(p){
-
-const name=prompt("商品名",p.name);
-if(name===null) return;
-
-const desc=prompt("説明",p.desc||"");
-if(desc===null) return;
-
-const image=prompt("画像URL",p.image||"");
-if(image===null) return;
-
-const tag=prompt("タグ (人気 / 更新)",p.tag||"");
-
-await updateDoc(doc(db,"products",p.id),{
-
-name,
-desc,
-image,
-tag,
-updatedAt:Date.now()
-
-});
-
-}
-
-
-/* 並び替え共通 */
-
-async function swapOrder(col,idA,orderA,idB,orderB){
-
-await updateDoc(doc(db,col,idA),{order:orderB});
-await updateDoc(doc(db,col,idB),{order:orderA});
-
-}
-
-
-/* カテゴリ並び替え */
-
-window.moveCategoryUp=async function(id){
-
-const sorted=[...categories].sort((a,b)=>a.order-b.order);
-
-const i=sorted.findIndex(c=>c.id===id);
-
-if(i<=0) return;
-
-await swapOrder("categories",
-sorted[i].id,
-sorted[i].order,
-sorted[i-1].id,
-sorted[i-1].order);
-
-}
-
-
-window.moveCategoryDown=async function(id){
-
-const sorted=[...categories].sort((a,b)=>a.order-b.order);
-
-const i=sorted.findIndex(c=>c.id===id);
-
-if(i>=sorted.length-1) return;
-
-await swapOrder("categories",
-sorted[i].id,
-sorted[i].order,
-sorted[i+1].id,
-sorted[i+1].order);
-
-}
-
-
-/* 商品並び替え */
-
-window.moveProductUp=async function(id){
-
-const sorted=[...products].sort((a,b)=>a.order-b.order);
-
-const i=sorted.findIndex(p=>p.id===id);
-
-if(i<=0) return;
-
-await swapOrder("products",
-sorted[i].id,
-sorted[i].order,
-sorted[i-1].id,
-sorted[i-1].order);
-
-}
-
-
-window.moveProductDown=async function(id){
-
-const sorted=[...products].sort((a,b)=>a.order-b.order);
-
-const i=sorted.findIndex(p=>p.id===id);
-
-if(i>=sorted.length-1) return;
-
-await swapOrder("products",
-sorted[i].id,
-sorted[i].order,
-sorted[i+1].id,
-sorted[i+1].order);
-
-}
-
-
-/* Firestore監視 */
-
-onSnapshot(query(collection(db,"categories"),orderBy("order")),snap=>{
-
-categories=[];
-productCategory.innerHTML="";
-
-snap.forEach(d=>{
-
-const data={id:d.id,...d.data()};
-
-categories.push(data);
-
-const opt=document.createElement("option");
-opt.value=data.name;
-opt.textContent=data.name;
-productCategory.appendChild(opt);
-
-});
-
-renderProducts();
-
-});
-
-
-onSnapshot(query(collection(db,"products"),orderBy("order")),snap=>{
-
-products=[];
-
-snap.forEach(d=>{
-products.push({id:d.id,...d.data()});
-});
-
-renderProducts();
-
-});
-
-
-/* 描画 */
-
-function renderProducts(){
-
-productList.innerHTML="";
-
-categories
-.sort((a,b)=>a.order-b.order)
-.forEach(cat=>{
-
-const header=document.createElement("div");
-
-header.className="categoryHeader";
-
-header.innerHTML=`
-
-${openCategories[cat.name]?"▼":"▶"} ${cat.name}
-
-<button onclick="event.stopPropagation();moveCategoryUp('${cat.id}')">▲</button>
-
-<button onclick="event.stopPropagation();moveCategoryDown('${cat.id}')">▼</button>
-
-<button onclick="event.stopPropagation();editCategory('${cat.id}','${cat.name}')">編集</button>
-
-<button onclick="event.stopPropagation();deleteCategory('${cat.id}')">削除</button>
-
-`;
-
-header.onclick=()=>toggleCategory(cat.name);
-
-productList.appendChild(header);
-
-
-if(!openCategories[cat.name]) return;
-
-
-products
-.filter(p=>p.category===cat.name)
-.sort((a,b)=>a.order-b.order)
-.forEach(p=>{
-
-const div=document.createElement("div");
-
-div.className="item";
-
-div.innerHTML=`
-
-${p.name}
-
-<button onclick="moveProductUp('${p.id}')">▲</button>
-
-<button onclick="moveProductDown('${p.id}')">▼</button>
-
-<button onclick='editProduct(${JSON.stringify(p)})'>編集</button>
-
-<button onclick="deleteProduct('${p.id}')">削除</button>
-
-`;
-
-productList.appendChild(div);
-
-});
-
-});
-
-}
-
-
-function toggleCategory(name){
-
-openCategories[name]=!openCategories[name];
-
-renderProducts();
-
-}
-
-checkAutoLogin();
 
 </script>
+
 </body>
 </html>
