@@ -12,9 +12,7 @@
 
 <style>
 
-*{
-box-sizing:border-box;
-}
+*{box-sizing:border-box;}
 
 body{
 margin:0;
@@ -22,9 +20,6 @@ font-family:"Noto Sans JP";
 color:#e5e7eb;
 background:#020617;
 }
-
-
-/* ヘッダー */
 
 .header{
 position:fixed;
@@ -44,9 +39,6 @@ z-index:100;
 font-size:18px;
 }
 
-
-/* メイン */
-
 .container{
 max-width:1200px;
 margin:70px auto 0;
@@ -55,28 +47,18 @@ display:flex;
 gap:16px;
 }
 
-
-/* パネル */
-
 .panel{
 background:#030712;
 border-radius:12px;
 padding:12px;
-flex-direction:column;
 display:flex;
+flex-direction:column;
 border:1px solid #222;
 }
 
-
-/* PC */
-
-.categories{ width:250px; }
-.products{ width:420px; }
-.detail{ flex:1; }
-
-
-
-/* カテゴリPC */
+.categories{width:250px;}
+.products{width:420px;}
+.detail{flex:1;}
 
 .categoryBtn{
 padding:10px;
@@ -86,38 +68,6 @@ border-radius:10px;
 cursor:pointer;
 text-align:center;
 }
-
-.categoryRow{
-display:flex;
-align-items:center;
-gap:8px;
-}
-
-.categoryImgPC{
-
-width:32px;
-height:32px;
-
-border-radius:6px;
-
-object-fit:cover;
-
-}
-
-
-/* 検索 */
-
-#searchBox{
-width:100%;
-padding:10px;
-border-radius:8px;
-border:none;
-margin-top:6px;
-font-size:16px;
-}
-
-
-/* 商品 */
 
 .card{
 display:flex;
@@ -137,17 +87,11 @@ object-fit:cover;
 border-radius:8px;
 }
 
-
-/* 説明改行 */
-
 #productDetail{
 white-space:pre-wrap;
 line-height:1.7;
 word-break:break-word;
 }
-
-
-/* モーダル */
 
 .modal{
 position:fixed;
@@ -162,10 +106,6 @@ display:none;
 z-index:1000;
 }
 
-
-
-/* ===== スマホUI ===== */
-
 @media(max-width:700px){
 
 .container{
@@ -173,81 +113,9 @@ flex-direction:column;
 margin-top:65px;
 }
 
-.categories{
-width:100%;
-}
-
-.products{
-width:100%;
-}
-
 .detail{
 display:none;
 }
-
-
-/* カテゴリ グリッド */
-
-#categoryList{
-
-display:grid;
-
-grid-template-columns:repeat(3,1fr);
-
-gap:12px;
-
-}
-
-
-/* カテゴリカード */
-
-.categoryBtn{
-
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-
-padding:10px;
-
-}
-
-
-/* カテゴリ画像 */
-
-.categoryImg{
-
-width:70px;
-height:70px;
-
-border-radius:12px;
-
-object-fit:cover;
-
-margin-bottom:6px;
-
-}
-
-
-/* 商品カード */
-
-.card{
-padding:14px;
-}
-
-.card img{
-width:80px;
-height:80px;
-}
-
-
-/* モーダル */
-
-.modal{
-font-size:17px;
-line-height:1.7;
-}
-
 
 }
 
@@ -255,36 +123,20 @@ line-height:1.7;
 
 </head>
 
-
-
 <body>
 
-
 <div class="header">
-
 <div class="logoText">
-
 MT GROUP PRODUCT LIST
-
 </div>
-
 </div>
-
-
 
 <div class="container">
 
-
-
 <div class="panel categories">
-
 <h3>Contents</h3>
-
 <div id="categoryList"></div>
-
 </div>
-
-
 
 <div class="panel products">
 
@@ -298,8 +150,6 @@ oninput="searchAll()">
 
 </div>
 
-
-
 <div class="panel detail">
 
 <h3>説明</h3>
@@ -312,56 +162,77 @@ oninput="searchAll()">
 
 </div>
 
-
-
 </div>
 
-
-
 <div id="mobileModal" class="modal"></div>
-
-
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-
 const firebaseConfig={
-
 apiKey:"AIzaSyAii9UA3YBztj3XE8QErStcf-TpIkFJYWQ",
 authDomain:"mtgroup-df495.firebaseapp.com",
 projectId:"mtgroup-df495",
 storageBucket:"mtgroup-df495.firebasestorage.app",
 messagingSenderId:"33007954637",
 appId:"1:33007954637:web:0a1c249df6764f8d855784"
-
 };
-
 
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
-
-
 
 let categories=[];
 let products=[];
 let currentCategory=null;
 
 
+function convertYoutube(text){
 
-function searchAll(){
+const regex=/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[^\s]+/g;
 
-currentCategory=null;
-renderCategories();
-renderProducts();
+return text.replace(regex,url=>{
+
+let id=null;
+
+if(url.includes("watch?v="))
+id=url.split("watch?v=")[1].split("&")[0];
+
+if(url.includes("youtu.be/"))
+id=url.split("youtu.be/")[1].split("?")[0];
+
+if(!id)return url;
+
+return `<iframe width="100%" height="250"
+src="https://www.youtube.com/embed/${id}"
+frameborder="0"
+allowfullscreen
+style="margin-top:10px;border-radius:8px;">
+</iframe>`;
+
+});
 
 }
 
 
 
+const categoryList=document.getElementById("categoryList");
+const productList=document.getElementById("productList");
+const productDetail=document.getElementById("productDetail");
+const mobileModal=document.getElementById("mobileModal");
+
+
+function searchAll(){
+currentCategory=null;
+renderCategories();
+renderProducts();
+}
+
+
 function showProduct(p){
+
+let desc=convertYoutube(p.desc||"");
 
 const html=`
 
@@ -373,7 +244,7 @@ line-height:1.7;
 word-break:break-word;
 ">
 
-${p.desc||""}
+${desc}
 
 </div>
 
@@ -381,15 +252,13 @@ ${p.image?`<img src="${p.image}" style="max-width:100%;border-radius:8px;">`:""}
 
 `;
 
-
 if(window.innerWidth<=700){
 
 mobileModal.style.display="block";
 
 mobileModal.innerHTML=`
 
-<button onclick="closeModal()"
-style="font-size:18px;margin-bottom:20px;">
+<button onclick="closeModal()">
 ← 戻る
 </button>
 
@@ -406,45 +275,26 @@ productDetail.innerHTML=html;
 }
 
 
-
 window.closeModal=function(){
-
 mobileModal.style.display="none";
-
 }
-
-
-
-const categoryList=document.getElementById("categoryList");
-const productList=document.getElementById("productList");
-const productDetail=document.getElementById("productDetail");
-const mobileModal=document.getElementById("mobileModal");
-
 
 
 function renderCategories(){
 
 categoryList.innerHTML="";
 
-
-/* すべて */
-
 const all=document.createElement("div");
 
 all.className="categoryBtn";
-
-all.innerHTML="すべて";
+all.textContent="すべて";
 
 all.onclick=()=>{
-
 currentCategory=null;
-
 renderProducts();
-
 };
 
 categoryList.appendChild(all);
-
 
 
 categories.forEach(cat=>{
@@ -453,56 +303,22 @@ const btn=document.createElement("div");
 
 btn.className="categoryBtn";
 
-
-
-if(window.innerWidth<=700){
-
-btn.innerHTML=`
-
-${cat.image?`<img class="categoryImg" src="${cat.image}">`:""}
-
-<div>${cat.name}</div>
-
-`;
-
-}else{
-
-btn.innerHTML=`
-
-<div class="categoryRow">
-
-${cat.image?`<img class="categoryImgPC" src="${cat.image}">`:""}
-
-<div>${cat.name}</div>
-
-</div>
-
-`;
-
-}
-
-
+btn.textContent=cat.name;
 
 btn.onclick=()=>{
-
 currentCategory=cat.name;
-
 renderProducts();
-
 };
-
-
 
 categoryList.appendChild(btn);
 
 });
 
-
 }
 
 
 
-onSnapshot(query(collection(db,"categories"),orderBy("order")), snap=>{
+onSnapshot(query(collection(db,"categories"),orderBy("order")),snap=>{
 
 categories=[];
 
@@ -513,8 +329,7 @@ renderCategories();
 });
 
 
-
-onSnapshot(query(collection(db,"products"),orderBy("order")), snap=>{
+onSnapshot(query(collection(db,"products"),orderBy("order")),snap=>{
 
 products=[];
 
@@ -525,13 +340,11 @@ renderProducts();
 });
 
 
-
 function renderProducts(){
 
 const keyword=document.getElementById("searchBox").value.toLowerCase();
 
 productList.innerHTML="";
-
 
 products
 
@@ -540,7 +353,6 @@ products
 .filter(p=>p.name.toLowerCase().includes(keyword))
 
 .forEach(p=>{
-
 
 const card=document.createElement("div");
 
@@ -554,7 +366,6 @@ ${p.image?`<img src="${p.image}">`:""}
 
 `;
 
-
 card.onclick=()=>showProduct(p);
 
 productList.appendChild(card);
@@ -563,9 +374,7 @@ productList.appendChild(card);
 
 }
 
-
 </script>
-
 
 
 <script>
