@@ -1,79 +1,73 @@
 <!doctype html>
+
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>製品一覧</title>
-
-<!-- ★フォント読み込み追加 -->
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet">
+<title>製品一覧</title><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p&display=swap" rel="stylesheet">
-
-<style>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p&display=swap" rel="stylesheet"><style>
 *{ box-sizing:border-box; }
 
 body{
-  margin:0;
-  font-family:"Georgia", serif;
-  color:#e5e7eb;
-  background:
-    radial-gradient(circle at 30% 20%, rgba(255,255,255,0.04), transparent 40%),
-    radial-gradient(circle at 70% 80%, rgba(255,255,255,0.03), transparent 45%),
-    linear-gradient(180deg,#020617,#020617,#030712);
+margin:0;
+font-family:"Georgia", serif;
+color:#e5e7eb;
+background:
+radial-gradient(circle at 30% 20%, rgba(255,255,255,0.04), transparent 40%),
+radial-gradient(circle at 70% 80%, rgba(255,255,255,0.03), transparent 45%),
+linear-gradient(180deg,#020617,#020617,#030712);
 }
 
 .header{
-  position:fixed;
-  top:0; left:0; right:0;
-  height:72px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:rgba(8,10,14,0.85);
-  backdrop-filter:blur(10px);
-  border-bottom:1px solid rgba(255,215,160,.25);
-  z-index:100;
+position:fixed;
+top:0; left:0; right:0;
+height:72px;
+display:flex;
+align-items:center;
+justify-content:center;
+background:rgba(8,10,14,0.85);
+backdrop-filter:blur(10px);
+border-bottom:1px solid rgba(255,215,160,.25);
+z-index:100;
 }
 
 .logoText{
-  font-size:20px;
-  letter-spacing:.12em;
-  color:#f5d28c;
+font-size:20px;
+letter-spacing:.12em;
+color:#f5d28c;
 }
 
 .container{
-  display:flex;
-  max-width:1400px;
-  margin:90px auto 20px auto;
-  gap:20px;
-  padding:0 16px;
-  height:calc(100vh - 110px);
+display:flex;
+max-width:1400px;
+margin:90px auto 20px auto;
+gap:20px;
+padding:0 16px;
+height:calc(100vh - 110px);
 }
 
 .panel{
-  background:rgba(12,14,18,0.75);
-  backdrop-filter:blur(14px);
-  border-radius:14px;
-  padding:16px;
-  border:1px solid rgba(255,215,160,.25);
-  box-shadow:0 20px 50px rgba(0,0,0,.85);
-  display:flex;
-  flex-direction:column;
+background:rgba(12,14,18,0.75);
+backdrop-filter:blur(14px);
+border-radius:14px;
+padding:16px;
+border:1px solid rgba(255,215,160,.25);
+box-shadow:0 20px 50px rgba(0,0,0,.85);
+display:flex;
+flex-direction:column;
 }
 
 .categories{ width:260px; }
 .products{ width:420px; }
 .detail{ flex:1; overflow:auto; }
 
-h3{ margin-top:0; color:#f5d28c; }
-
 .badge{
-  font-size:10px;
-  padding:2px 6px;
-  border-radius:6px;
-  margin-left:6px;
-  color:white;
+font-size:10px;
+padding:2px 6px;
+border-radius:6px;
+margin-left:6px;
+color:white;
 }
 
 .badge-new{ background:#ef4444; }
@@ -81,129 +75,71 @@ h3{ margin-top:0; color:#f5d28c; }
 .badge-update{ background:#3b82f6; }
 
 .categoryBtn{
-  width:100%;
-  margin:8px 0;
-  padding:12px;
-  border-radius:10px;
-  cursor:pointer;
-  background:linear-gradient(180deg,#0b0f16,#020617);
-  border:1px solid rgba(255,215,160,.12);
-  position:relative;
-}
-
-.categoryBtn.active::before{
-  content:"";
-  position:absolute;
-  left:0; top:6px; bottom:6px;
-  width:4px;
-  border-radius:3px;
-  background:linear-gradient(#f5d28c,#caa24a);
+width:100%;
+margin:8px 0;
+padding:12px;
+border-radius:10px;
+cursor:pointer;
+background:linear-gradient(180deg,#0b0f16,#020617);
+border:1px solid rgba(255,215,160,.12);
 }
 
 .searchArea{
-  position:sticky;
-  top:0;
-  background:rgba(12,14,18,0.95);
-  padding-bottom:10px;
-  z-index:2;
+position:sticky;
+top:0;
+background:rgba(12,14,18,0.95);
+padding-bottom:10px;
+z-index:2;
 }
 
 .productScroll{
-  overflow:auto;
-  flex:1;
+overflow:auto;
+flex:1;
 }
 
 .card{
-  display:flex;
-  gap:12px;
-  align-items:center;
-  background:linear-gradient(180deg,#020617,#030712);
-  border-radius:12px;
-  padding:10px;
-  margin-bottom:12px;
-  cursor:pointer;
-  border:1px solid rgba(255,215,160,.20);
-  box-shadow:0 10px 20px rgba(0,0,0,.6);
-  transition:.25s;
+display:flex;
+gap:12px;
+align-items:center;
+background:linear-gradient(180deg,#020617,#030712);
+border-radius:12px;
+padding:10px;
+margin-bottom:12px;
+cursor:pointer;
+border:1px solid rgba(255,215,160,.20);
 }
-
-.card:hover{ transform:translateY(-2px); }
 
 .card img{
-  width:72px;
-  height:72px;
-  object-fit:cover;
-  border-radius:8px;
-}
-
-.cardTitle{
-  color:#f5d28c;
-  font-size:15px;
-}
-
-input{
-  width:100%;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid rgba(255,215,160,.20);
-  background:#020617;
-  color:#e5e7eb;
-}
-
-@media (max-width:700px){
-  .container{ flex-direction:column; height:auto; }
-  .detail{ display:none; }
+width:72px;
+height:72px;
+object-fit:cover;
+border-radius:8px;
 }
 
 .modal{
-  position:fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background:#020617;
-  padding:20px;
-  overflow:auto;
-  display:none;
-  z-index:1000;
+position:fixed;
+top:0; left:0;
+width:100%; height:100%;
+background:#020617;
+padding:20px;
+overflow:auto;
+display:none;
+z-index:1000;
 }
-</style>
-</head>
-
-<body>
-
-<div class="header">
-  <div class="logoText">MT GROUP PRODUCT LIST</div>
-</div>
-
-<div class="container">
-
-<div class="panel categories">
+</style></head><body><div class="header">
+<div class="logoText">MT GROUP PRODUCT LIST</div>
+</div><div class="container"><div class="panel categories">
 <h3>Contents</h3>
 <div id="categoryList"></div>
-</div>
-
-<div class="panel products">
-
-<div class="searchArea">
+</div><div class="panel products"><div class="searchArea">
 <h3>product</h3>
 <input id="searchBox" placeholder="商品検索" oninput="searchAll()">
-</div>
-
-<div class="productScroll">
+</div><div class="productScroll">
 <div id="productList"></div>
-</div>
-
-</div>
-
-<div class="panel detail">
+</div></div><div class="panel detail">
 <h3>説明</h3>
 <div id="productDetail">製品を選択してください</div>
-</div>
-
-</div>
-
-<div id="mobileModal" class="modal"></div>
-
-<script type="module">
+</div></div><div id="mobileModal" class="modal"></div><script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -224,17 +160,38 @@ let categories=[];
 let products=[];
 let currentCategory=null;
 
-const NEW_LIMIT = 48*60*60*1000;
+function getYoutubeID(url){
 
-function isNew(updatedAt){
-return updatedAt && (Date.now()-updatedAt < NEW_LIMIT);
+if(!url) return null;
+
+if(url.includes("watch?v="))
+return url.split("watch?v=")[1].split("&")[0];
+
+if(url.includes("youtu.be/"))
+return url.split("youtu.be/")[1].split("?")[0];
+
+return null;
+
 }
 
-function tagBadge(tag){
-if(!tag) return "";
-if(tag==="人気") return '<span class="badge badge-hot">人気</span>';
-if(tag==="更新") return '<span class="badge badge-update">更新</span>';
-return `<span class="badge">${tag}</span>`;
+function getYoutubeThumb(url){
+
+const id=getYoutubeID(url);
+
+if(!id) return null;
+
+return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+
+}
+
+function getYoutubeEmbed(url){
+
+const id=getYoutubeID(url);
+
+if(!id) return url;
+
+return `https://www.youtube.com/embed/${id}`;
+
 }
 
 const categoryList=document.getElementById("categoryList");
@@ -248,24 +205,30 @@ renderCategories();
 renderProducts();
 }
 
-function linkify(text){
-if(!text) return "";
-let formatted=text.replace(/\n/g,"<br>");
-formatted=formatted.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank">$1</a>');
-return formatted;
-}
-
-function isMobile(){ return window.innerWidth<=700; }
-
 function showProduct(p){
+
+let videoHTML="";
+
+if(p.video){
+
+videoHTML=`
+<iframe width="100%" height="315"
+src="${getYoutubeEmbed(p.video)}"
+frameborder="0"
+allowfullscreen
+style="margin-top:10px;border-radius:8px;">
+</iframe>`;
+
+}
 
 const html=`
 <h3>${p.name}</h3>
-<p>${linkify(p.desc)}</p>
+<p>${p.desc||""}</p>
 ${p.image?`<img src="${p.image}" style="max-width:100%;border-radius:8px;">`:""}
+${videoHTML}
 `;
 
-if(isMobile()){
+if(window.innerWidth<=700){
 modal.style.display="block";
 modal.innerHTML=`<button onclick="closeModal()">← 戻る</button>${html}`;
 }else{
@@ -282,90 +245,63 @@ function renderCategories(){
 
 categoryList.innerHTML="";
 
-const allBtn=document.createElement("div");
-
-allBtn.className="categoryBtn";
-
-if(currentCategory===null)
-allBtn.classList.add("active");
-
-allBtn.textContent="すべて";
-
-allBtn.onclick=()=>{
+const all=document.createElement("div");
+all.className="categoryBtn";
+all.textContent="すべて";
+all.onclick=()=>{
 currentCategory=null;
 renderProducts();
-renderCategories();
 };
-
-categoryList.appendChild(allBtn);
+categoryList.appendChild(all);
 
 categories.forEach(cat=>{
-
 const btn=document.createElement("div");
-
 btn.className="categoryBtn";
-
-if(currentCategory===cat.name)
-btn.classList.add("active");
-
-btn.innerHTML=
-cat.name+
-(isNew(cat.updatedAt)?' <span class="badge badge-new">NEW</span>':"");
-
+btn.textContent=cat.name;
 btn.onclick=()=>{
 currentCategory=cat.name;
 renderProducts();
-renderCategories();
 };
-
 categoryList.appendChild(btn);
-
 });
 
 }
 
 onSnapshot(query(collection(db,"categories"),orderBy("order")), snap=>{
-
 categories=[];
-
 snap.forEach(d=>categories.push(d.data()));
-
 renderCategories();
-
 });
 
 onSnapshot(query(collection(db,"products"),orderBy("order")), snap=>{
-
 products=[];
-
 snap.forEach(d=>products.push(d.data()));
-
 renderProducts();
-
 });
 
-window.renderProducts=function(){
+function renderProducts(){
 
 const keyword=document.getElementById("searchBox").value.toLowerCase();
 
 productList.innerHTML="";
 
 products
-.filter(p => (!currentCategory || p.category===currentCategory))
-.filter(p => p.name.toLowerCase().includes(keyword))
+.filter(p=>!currentCategory||p.category===currentCategory)
+.filter(p=>p.name.toLowerCase().includes(keyword))
 .forEach(p=>{
+
+let thumb=p.image;
+
+if(!thumb && p.video)
+thumb=getYoutubeThumb(p.video);
 
 const card=document.createElement("div");
 
 card.className="card";
 
 card.innerHTML=`
-${p.image?`<img src="${p.image}">`:""}
-<div class="cardTitle">
-${p.name}
-${tagBadge(p.tag)}
-${isNew(p.updatedAt)?'<span class="badge badge-new">NEW</span>':""}
-</div>
+${thumb?`<img src="${thumb}">`:""}
+<div>${p.name}</div>
 `;
 
 card.onclick=()=>showProduct(p);
@@ -376,22 +312,8 @@ productList.appendChild(card);
 
 }
 
-</script>
-
-
-<!-- ★フォント反映機能追加 -->
-<script>
-
+</script><script>
 const font=localStorage.getItem("siteFont");
-
-if(font){
-
-document.body.style.fontFamily=font;
-
-}
-
-</script>
-
-
-</body>
+if(font) document.body.style.fontFamily=font;
+</script></body>
 </html>
