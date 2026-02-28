@@ -64,27 +64,23 @@ const productCategory=document.getElementById("productCategory");
 
 
 window.saveFont=function(){
-const font=document.getElementById("fontSelect").value;
-localStorage.setItem("siteFont",font);
-alert("フォント保存しました");
+localStorage.setItem("siteFont",
+document.getElementById("fontSelect").value);
+alert("保存しました");
 }
 
 
 function checkAutoLogin(){
 const t=localStorage.getItem(LOGIN_KEY);
-if(t && Date.now()-t<LOGIN_DURATION){
+if(t && Date.now()-t<LOGIN_DURATION)
 document.getElementById("mainPanel").style.display="block";
-}
 }
 
 
 window.login=function(){
-const pass=prompt("パスワード");
-if(pass===ADMIN_PASSWORD){
+if(prompt("パスワード")==ADMIN_PASSWORD){
 localStorage.setItem(LOGIN_KEY,Date.now());
-document.getElementById("mainPanel").style.display="block";
-}else{
-alert("パスワードが違います");
+mainPanel.style.display="block";
 }
 }
 
@@ -98,15 +94,21 @@ location.reload();
 /* カテゴリ追加 */
 
 window.addCategory=async function(){
-const name=document.getElementById("catName").value.trim();
+
+const name=catName.value.trim();
+
 if(!name)return;
 
 await addDoc(collection(db,"categories"),{
+
 name,
 order:Date.now(),
 updatedAt:Date.now()
+
 });
-document.getElementById("catName").value="";
+
+catName.value="";
+
 }
 
 
@@ -115,62 +117,85 @@ document.getElementById("catName").value="";
 window.addProduct=async function(){
 
 const category=productCategory.value;
-const name=document.getElementById("pName").value.trim();
-const desc=document.getElementById("pDesc").value;
-const image=document.getElementById("pImage").value;
-const video=document.getElementById("pVideo").value;
-const tag=document.getElementById("pTag").value;
+const name=pName.value.trim();
+const desc=pDesc.value;
+const image=pImage.value;
+const video=pVideo.value;
+const tag=pTag.value;
 
-if(!category||!name){
-alert("カテゴリと商品名は必須です");
-return;
-}
+if(!category||!name)return alert("必須項目不足");
 
 await addDoc(collection(db,"products"),{
+
 category,name,desc,image,video,tag,
 order:Date.now(),
 updatedAt:Date.now()
+
 });
 
-document.getElementById("pName").value="";
-document.getElementById("pDesc").value="";
-document.getElementById("pImage").value="";
-document.getElementById("pVideo").value="";
+pName.value="";
+pDesc.value="";
+pImage.value="";
+pVideo.value="";
+
 }
 
 
-/* 編集削除並び替え */
+/* 編集削除 */
 
-window.deleteProduct=id=>deleteDoc(doc(db,"products",id))
+window.deleteProduct=id=>{
+if(confirm("削除しますか"))
+deleteDoc(doc(db,"products",id))
+}
+
 
 window.editProduct=p=>{
-const name=prompt("商品名",p.name)
-const desc=prompt("説明",p.desc)
-const image=prompt("画像URL",p.image)
-const video=prompt("動画URL",p.video||"")
-const tag=prompt("タグ",p.tag||"")
+
+const name=prompt("商品名",p.name);
+if(name===null)return;
 
 updateDoc(doc(db,"products",p.id),{
-name,desc,image,video,tag,
+
+name,
+desc:prompt("説明",p.desc),
+image:prompt("画像URL",p.image),
+video:prompt("動画URL",p.video||""),
+tag:prompt("タグ",p.tag||""),
 updatedAt:Date.now()
-})
+
+});
+
 }
 
+
+/* 並び替え */
 
 window.moveProductUp=async id=>{
-const s=[...products].sort((a,b)=>a.order-b.order)
-const i=s.findIndex(p=>p.id===id)
-if(i<=0)return
-await updateDoc(doc(db,"products",s[i].id),{order:s[i-1].order})
-await updateDoc(doc(db,"products",s[i-1].id),{order:s[i].order})
+const s=[...products].sort((a,b)=>a.order-b.order);
+const i=s.findIndex(p=>p.id===id);
+if(i<=0)return;
+updateDoc(doc(db,"products",s[i].id),{order:s[i-1].order});
+updateDoc(doc(db,"products",s[i-1].id),{order:s[i].order});
 }
 
+
 window.moveProductDown=async id=>{
-const s=[...products].sort((a,b)=>a.order-b.order)
-const i=s.findIndex(p=>p.id===id)
-if(i>=s.length-1)return
-await updateDoc(doc(db,"products",s[i].id),{order:s[i+1].order})
-await updateDoc(doc(db,"products",s[i+1].id),{order:s[i].order})
+const s=[...products].sort((a,b)=>a.order-b.order);
+const i=s.findIndex(p=>p.id===id);
+if(i>=s.length-1)return;
+updateDoc(doc(db,"products",s[i].id),{order:s[i+1].order});
+updateDoc(doc(db,"products",s[i+1].id),{order:s[i].order});
+}
+
+
+/* カテゴリ折りたたみ */
+
+function toggleCategory(name){
+
+openCategories[name]=!openCategories[name];
+
+renderProducts();
+
 }
 
 
@@ -178,72 +203,89 @@ await updateDoc(doc(db,"products",s[i+1].id),{order:s[i].order})
 
 onSnapshot(query(collection(db,"categories"),orderBy("order")),snap=>{
 
-categories=[]
-productCategory.innerHTML=""
+categories=[];
+productCategory.innerHTML="";
 
 snap.forEach(d=>{
-const data={id:d.id,...d.data()}
-categories.push(data)
 
-const opt=document.createElement("option")
-opt.value=data.name
-opt.textContent=data.name
-productCategory.appendChild(opt)
-})
+const data={id:d.id,...d.data()};
 
-renderProducts()
+categories.push(data);
 
-})
+const opt=document.createElement("option");
+
+opt.value=data.name;
+
+opt.textContent=data.name;
+
+productCategory.appendChild(opt);
+
+});
+
+renderProducts();
+
+});
 
 
 onSnapshot(query(collection(db,"products"),orderBy("order")),snap=>{
 
-products=[]
+products=[];
+
 snap.forEach(d=>{
-products.push({id:d.id,...d.data()})
-})
+products.push({id:d.id,...d.data()});
+});
 
-renderProducts()
+renderProducts();
 
-})
+});
 
 
 function renderProducts(){
 
-productList.innerHTML=""
+productList.innerHTML="";
 
 categories.forEach(cat=>{
 
-const header=document.createElement("div")
+const header=document.createElement("div");
 
-header.className="categoryHeader"
+header.className="categoryHeader";
 
-header.textContent=cat.name
+header.innerHTML=`
+${openCategories[cat.name]?"▼":"▶"} ${cat.name}
+`;
 
-productList.appendChild(header)
+header.onclick=()=>toggleCategory(cat.name);
+
+productList.appendChild(header);
+
+
+if(!openCategories[cat.name])return;
 
 
 products
 .filter(p=>p.category===cat.name)
 .forEach(p=>{
 
-const div=document.createElement("div")
-div.className="item"
+const div=document.createElement("div");
+
+div.className="item";
 
 div.innerHTML=`
+
 ${p.name}
 
 <button onclick="moveProductUp('${p.id}')">▲</button>
 <button onclick="moveProductDown('${p.id}')">▼</button>
 <button onclick='editProduct(${JSON.stringify(p)})'>編集</button>
 <button onclick="deleteProduct('${p.id}')">削除</button>
-`
 
-productList.appendChild(div)
+`;
 
-})
+productList.appendChild(div);
 
-})
+});
+
+});
 
 }
 
