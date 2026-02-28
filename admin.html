@@ -11,6 +11,8 @@ button{margin:4px 2px;padding:6px 10px;background:#1f2937;color:#fff;border:none
 input, textarea, select{width:100%;margin:6px 0;padding:6px;}
 .panel{background:#111827;padding:12px;border-radius:8px;margin-bottom:20px;}
 .item{background:#1f2937;padding:8px;border-radius:6px;margin:6px 0;}
+.categoryHeader{background:#374151;padding:10px;border-radius:6px;margin-top:8px;cursor:pointer;}
+.preview{margin-top:10px;padding:10px;background:#0f172a;border-radius:8px;display:none;}
 </style>
 </head>
 
@@ -23,51 +25,161 @@ input, textarea, select{width:100%;margin:6px 0;padding:6px;}
 
 <div id="mainPanel" style="display:none;">
 
-<!-- フォント設定 -->
+
+<!-- フォント設定追加 -->
 <div class="panel">
 
-<h3>フォント設定</h3>
+<h3>サイトフォント設定</h3>
 
 <select id="fontSelect">
 
-<option value="'Georgia', serif">
-標準フォント
+<option value='"Georgia",serif'>
+標準（現在のフォント）
 </option>
 
-<option value="'Noto Sans JP', sans-serif">
-Noto Sans
+<option value="'Noto Sans JP',sans-serif">
+Noto Sans JP
 </option>
 
-<option value="Arial, sans-serif">
+<option value="Arial,sans-serif">
 Arial
 </option>
 
-<option value="'Orbitron', sans-serif">
+<option value="'Orbitron',sans-serif">
 Orbitron
 </option>
 
-<option value="'M PLUS 1p', sans-serif">
+<option value="'M PLUS 1p',sans-serif">
 M PLUS
 </option>
 
 </select>
 
-<button onclick="saveFont()">保存</button>
+<button onclick="saveFont()">フォント保存</button>
 
 </div>
 
 
+<div class="panel">
+<h3>カテゴリ追加</h3>
+<input id="catName" placeholder="カテゴリ名">
+<button onclick="addCategory()">カテゴリ追加</button>
 </div>
 
-<script>
+
+<div class="panel">
+
+<h3>商品追加</h3>
+
+<select id="productCategory"></select>
+
+<input id="pName" placeholder="商品名">
+
+<input id="pImage" placeholder="画像URL">
+
+<textarea id="pDesc" placeholder="説明"></textarea>
+
+<select id="pTag">
+<option value="">タグなし</option>
+<option value="人気">人気</option>
+<option value="更新">更新</option>
+</select>
+
+<button onclick="addProduct()">商品追加</button>
+
+<hr>
+
+<div id="productList"></div>
+
+</div>
+
+</div>
+
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+addDoc,
+deleteDoc,
+doc,
+updateDoc,
+onSnapshot,
+query,
+orderBy
+}
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+
+const firebaseConfig={
+apiKey:"AIzaSyAii9UA3YBztj3XE8QErStcf-TpIkFJYWQ",
+authDomain:"mtgroup-df495.firebaseapp.com",
+projectId:"mtgroup-df495",
+storageBucket:"mtgroup-df495.firebasestorage.app",
+messagingSenderId:"33007954637",
+appId:"1:33007954637:web:0a1c249df6764f8d855784"
+};
+
+const app=initializeApp(firebaseConfig);
+
+const db=getFirestore(app);
+
 
 const ADMIN_PASSWORD="1234";
 
-function login(){
+const LOGIN_KEY="admin_login_time";
+
+const LOGIN_DURATION=24*60*60*1000;
+
+
+let categories=[];
+let products=[];
+let openCategories={};
+
+
+const productList=document.getElementById("productList");
+
+const productCategory=document.getElementById("productCategory");
+
+
+/* フォント保存 */
+
+window.saveFont=function(){
+
+const font=document.getElementById("fontSelect").value;
+
+localStorage.setItem("siteFont",font);
+
+alert("フォント保存しました");
+
+}
+
+
+/* ログイン */
+
+function checkAutoLogin(){
+
+const t=localStorage.getItem(LOGIN_KEY);
+
+if(t && Date.now()-t<LOGIN_DURATION){
+
+document.getElementById("mainPanel").style.display="block";
+
+}
+
+}
+
+
+window.login=function(){
 
 const pass=prompt("パスワード");
 
 if(pass===ADMIN_PASSWORD){
+
+localStorage.setItem(LOGIN_KEY,Date.now());
 
 document.getElementById("mainPanel").style.display="block";
 
@@ -79,23 +191,122 @@ alert("違います");
 
 }
 
-function logout(){
+
+window.logout=function(){
+
+localStorage.removeItem(LOGIN_KEY);
 
 location.reload();
 
 }
 
 
-function saveFont(){
+/* カテゴリ追加 */
 
-const font=
-document.getElementById("fontSelect").value;
+window.addCategory=async function(){
 
-localStorage.setItem("siteFont",font);
+const name=document.getElementById("catName").value.trim();
 
-alert("フォント保存しました");
+if(!name)return;
+
+
+await addDoc(collection(db,"categories"),{
+
+name,
+
+order:Date.now(),
+
+updatedAt:Date.now()
+
+});
+
+
+document.getElementById("catName").value="";
 
 }
+
+
+/* 商品追加 */
+
+window.addProduct=async function(){
+
+const category=productCategory.value;
+
+const name=document.getElementById("pName").value.trim();
+
+const desc=document.getElementById("pDesc").value;
+
+const image=document.getElementById("pImage").value;
+
+const tag=document.getElementById("pTag").value;
+
+
+if(!category || !name){
+
+alert("カテゴリと商品名必須");
+
+return;
+
+}
+
+
+await addDoc(collection(db,"products"),{
+
+category,
+
+name,
+
+desc,
+
+image,
+
+tag,
+
+order:Date.now(),
+
+updatedAt:Date.now()
+
+});
+
+
+document.getElementById("pName").value="";
+
+document.getElementById("pDesc").value="";
+
+document.getElementById("pImage").value="";
+
+}
+
+
+onSnapshot(query(collection(db,"categories"),orderBy("order")),snap=>{
+
+categories=[];
+
+productCategory.innerHTML="";
+
+
+snap.forEach(d=>{
+
+const data={id:d.id,...d.data()};
+
+categories.push(data);
+
+
+const opt=document.createElement("option");
+
+opt.value=data.name;
+
+opt.textContent=data.name;
+
+productCategory.appendChild(opt);
+
+});
+
+
+});
+
+
+checkAutoLogin();
 
 </script>
 
