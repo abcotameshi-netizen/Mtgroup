@@ -1,113 +1,43 @@
 <!doctype html>
+
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>管理画面</title>
-
-<style>
+<title>管理画面</title><style>
 body{margin:0;font-family:system-ui;background:#0b0f16;color:#fff;padding:20px;}
 button{margin:4px 2px;padding:6px 10px;background:#1f2937;color:#fff;border:none;border-radius:6px;cursor:pointer;}
 input, textarea, select{width:100%;margin:6px 0;padding:6px;}
 .panel{background:#111827;padding:12px;border-radius:8px;margin-bottom:20px;}
 .item{background:#1f2937;padding:8px;border-radius:6px;margin:6px 0;}
 .categoryHeader{background:#374151;padding:10px;border-radius:6px;margin-top:8px;cursor:pointer;}
-.preview{margin-top:10px;padding:10px;background:#0f172a;border-radius:8px;display:none;}
-img{max-width:100%;border-radius:8px;margin-top:10px;}
-</style>
-</head>
-
-<body>
-
-<h2>管理画面</h2>
-
-<button onclick="login()">パスワード入力</button>
+</style></head><body><h2>管理画面</h2><button onclick="login()">パスワード入力</button>
 <button onclick="logout()">ログアウト</button>
 
-<div id="mainPanel" style="display:none;">
+<div id="mainPanel" style="display:none;"><!-- 商品追加 --><div class="panel"><h3>商品追加</h3><select id="productCategory"></select>
 
-<!-- 商品追加 -->
-<div class="panel">
-
-<h3>商品追加</h3>
-
-<select id="productCategory"></select>
-
-<input id="pName" placeholder="商品名">
-
-<input id="pImage" placeholder="画像URL">
-
-<!-- ★追加 -->
-<input id="pVideo" placeholder="YouTube動画URL">
-
-<textarea id="pDesc" placeholder="説明"></textarea>
-
-<select id="pTag">
+<input id="pName" placeholder="商品名"><input id="pImage" placeholder="画像URL"><input id="pVideo" placeholder="YouTube動画URL"><textarea id="pDesc" placeholder="説明"></textarea><select id="pTag">
 <option value="">タグなし</option>
 <option value="人気">人気</option>
 <option value="更新">更新</option>
-</select>
+</select><button onclick="addProduct()">商品追加</button>
 
-<button onclick="addProduct()">商品追加</button>
-
-<hr>
-
-<div id="productList"></div>
-<div id="productPreview" class="preview"></div>
-
-</div>
-
-
-<!-- カテゴリ追加 -->
-<div class="panel">
+<hr><div id="productList"></div></div><!-- カテゴリ追加 --><div class="panel">
 <h3>カテゴリ追加</h3>
 <input id="catName">
 <button onclick="addCategory()">カテゴリ追加</button>
-</div>
-
-
-<!-- フォント設定 -->
-<div class="panel">
-
-<h3>サイトフォント設定</h3>
-
-<select id="fontSelect">
-
+</div><!-- フォント設定 --><div class="panel"><h3>サイトフォント設定</h3><select id="fontSelect">
 <option value="system-ui">標準フォント</option>
+<option value="'Noto Sans JP',sans-serif">Noto Sans JP</option>
+<option value="Arial,sans-serif">Arial</option>
+<option value="'Orbitron',sans-serif">Orbitron</option>
+<option value="'M PLUS 1p',sans-serif">M PLUS</option>
+</select><button onclick="saveFont()">フォント保存</button>
 
-<option value="'Noto Sans JP',sans-serif">
-Noto Sans JP
-</option>
-
-<option value="Arial,sans-serif">
-Arial
-</option>
-
-<option value="'Orbitron',sans-serif">
-Orbitron
-</option>
-
-<option value="'M PLUS 1p',sans-serif">
-M PLUS
-</option>
-
-</select>
-
-<button onclick="saveFont()">フォント保存</button>
-
-</div>
-
-</div>
-
-<script type="module">
+</div></div><script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-
-import {
-getFirestore, collection, addDoc, deleteDoc, doc,
-updateDoc, onSnapshot, query, orderBy
-}
-from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig={
 apiKey:"AIzaSyAii9UA3YBztj3XE8QErStcf-TpIkFJYWQ",
@@ -122,9 +52,7 @@ const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
 const ADMIN_PASSWORD="1234";
-
 const LOGIN_KEY="admin_login_time";
-
 const LOGIN_DURATION=24*60*60*1000;
 
 let categories=[];
@@ -136,75 +64,49 @@ const productCategory=document.getElementById("productCategory");
 
 
 window.saveFont=function(){
-
 const font=document.getElementById("fontSelect").value;
-
 localStorage.setItem("siteFont",font);
-
 alert("フォント保存しました");
-
 }
 
 
 function checkAutoLogin(){
-
 const t=localStorage.getItem(LOGIN_KEY);
-
 if(t && Date.now()-t<LOGIN_DURATION){
-
 document.getElementById("mainPanel").style.display="block";
-
 }
-
 }
 
 
 window.login=function(){
-
 const pass=prompt("パスワード");
-
 if(pass===ADMIN_PASSWORD){
-
 localStorage.setItem(LOGIN_KEY,Date.now());
-
 document.getElementById("mainPanel").style.display="block";
-
 }else{
-
 alert("パスワードが違います");
-
 }
-
 }
 
 
 window.logout=function(){
-
 localStorage.removeItem(LOGIN_KEY);
-
 location.reload();
-
 }
 
 
 /* カテゴリ追加 */
 
 window.addCategory=async function(){
-
 const name=document.getElementById("catName").value.trim();
-
 if(!name)return;
 
 await addDoc(collection(db,"categories"),{
-
 name,
 order:Date.now(),
 updatedAt:Date.now()
-
 });
-
 document.getElementById("catName").value="";
-
 }
 
 
@@ -213,126 +115,140 @@ document.getElementById("catName").value="";
 window.addProduct=async function(){
 
 const category=productCategory.value;
-
 const name=document.getElementById("pName").value.trim();
-
 const desc=document.getElementById("pDesc").value;
-
 const image=document.getElementById("pImage").value;
-
-/* ★追加 */
 const video=document.getElementById("pVideo").value;
-
 const tag=document.getElementById("pTag").value;
 
 if(!category||!name){
-
 alert("カテゴリと商品名は必須です");
-
 return;
-
 }
 
 await addDoc(collection(db,"products"),{
-
-category,
-name,
-desc,
-image,
-video,
-tag,
+category,name,desc,image,video,tag,
 order:Date.now(),
 updatedAt:Date.now()
-
 });
-
 
 document.getElementById("pName").value="";
 document.getElementById("pDesc").value="";
 document.getElementById("pImage").value="";
 document.getElementById("pVideo").value="";
-
 }
 
 
+/* 編集削除並び替え */
+
+window.deleteProduct=id=>deleteDoc(doc(db,"products",id))
+
+window.editProduct=p=>{
+const name=prompt("商品名",p.name)
+const desc=prompt("説明",p.desc)
+const image=prompt("画像URL",p.image)
+const video=prompt("動画URL",p.video||"")
+const tag=prompt("タグ",p.tag||"")
+
+updateDoc(doc(db,"products",p.id),{
+name,desc,image,video,tag,
+updatedAt:Date.now()
+})
+}
+
+
+window.moveProductUp=async id=>{
+const s=[...products].sort((a,b)=>a.order-b.order)
+const i=s.findIndex(p=>p.id===id)
+if(i<=0)return
+await updateDoc(doc(db,"products",s[i].id),{order:s[i-1].order})
+await updateDoc(doc(db,"products",s[i-1].id),{order:s[i].order})
+}
+
+window.moveProductDown=async id=>{
+const s=[...products].sort((a,b)=>a.order-b.order)
+const i=s.findIndex(p=>p.id===id)
+if(i>=s.length-1)return
+await updateDoc(doc(db,"products",s[i].id),{order:s[i+1].order})
+await updateDoc(doc(db,"products",s[i+1].id),{order:s[i].order})
+}
+
+
+/* Firestore */
+
 onSnapshot(query(collection(db,"categories"),orderBy("order")),snap=>{
 
-categories=[];
-productCategory.innerHTML="";
+categories=[]
+productCategory.innerHTML=""
 
 snap.forEach(d=>{
+const data={id:d.id,...d.data()}
+categories.push(data)
 
-const data={id:d.id,...d.data()};
+const opt=document.createElement("option")
+opt.value=data.name
+opt.textContent=data.name
+productCategory.appendChild(opt)
+})
 
-categories.push(data);
+renderProducts()
 
-const opt=document.createElement("option");
-
-opt.value=data.name;
-
-opt.textContent=data.name;
-
-productCategory.appendChild(opt);
-
-});
-
-renderProducts();
-
-});
+})
 
 
 onSnapshot(query(collection(db,"products"),orderBy("order")),snap=>{
 
-products=[];
-
+products=[]
 snap.forEach(d=>{
+products.push({id:d.id,...d.data()})
+})
 
-products.push({id:d.id,...d.data()});
+renderProducts()
 
-});
-
-renderProducts();
-
-});
+})
 
 
 function renderProducts(){
 
-productList.innerHTML="";
+productList.innerHTML=""
 
-categories
-.sort((a,b)=>a.order-b.order)
-.forEach(cat=>{
+categories.forEach(cat=>{
 
-const header=document.createElement("div");
+const header=document.createElement("div")
 
-header.className="categoryHeader";
+header.className="categoryHeader"
 
-header.innerHTML=`
-${openCategories[cat.name]?"▼":"▶"} ${cat.name}
-`;
+header.textContent=cat.name
 
-header.onclick=()=>toggleCategory(cat.name);
+productList.appendChild(header)
 
-productList.appendChild(header);
 
-});
+products
+.filter(p=>p.category===cat.name)
+.forEach(p=>{
+
+const div=document.createElement("div")
+div.className="item"
+
+div.innerHTML=`
+${p.name}
+
+<button onclick="moveProductUp('${p.id}')">▲</button>
+<button onclick="moveProductDown('${p.id}')">▼</button>
+<button onclick='editProduct(${JSON.stringify(p)})'>編集</button>
+<button onclick="deleteProduct('${p.id}')">削除</button>
+`
+
+productList.appendChild(div)
+
+})
+
+})
 
 }
 
 
-function toggleCategory(name){
+checkAutoLogin()
 
-openCategories[name]=!openCategories[name];
-
-renderProducts();
-
-}
-
-
-checkAutoLogin();
-
-</script>
-
-</body>
+</script></body>
 </html>
