@@ -1,4 +1,580 @@
-html {
-  height: 100%;
-  width: 100%;
+:root{
+--mx:50vw;
+--my:40vh;
+}
+
+*{
+box-sizing:border-box;
+margin:0;
+padding:0;
+}
+
+body{
+font-family:"Noto Sans JP",sans-serif;
+color:#cfefff;
+
+background:
+radial-gradient(circle at 20% 20%,#001a2b,#000814 60%);
+
+min-height:100vh;
+overflow-x:hidden;
+}
+
+/* ===== AIグリッド背景 ===== */
+
+body::before{
+
+content:"";
+
+position:fixed;
+inset:0;
+
+background-image:
+linear-gradient(#00eaff22 1px,transparent 1px),
+linear-gradient(90deg,#00eaff22 1px,transparent 1px);
+
+background-size:40px 40px;
+
+opacity:.35;
+
+pointer-events:none;
+
+animation:gridMove 20s linear infinite;
+
+}
+
+@keyframes gridMove{
+0%{transform:translateY(0);}
+100%{transform:translateY(-200px);}
+}
+
+/* ===== AIデータストリーム + マウス光 ===== */
+
+body::after{
+
+content:"";
+
+position:fixed;
+inset:0;
+
+background:
+
+radial-gradient(
+600px 400px at var(--mx) var(--my),
+rgba(0,234,255,.25),
+transparent 70%
+),
+
+repeating-linear-gradient(
+180deg,
+transparent,
+transparent 40px,
+#00eaff11 41px,
+#00eaff11 42px
+);
+
+animation:dataFlow 12s linear infinite;
+
+pointer-events:none;
+
+}
+
+@keyframes dataFlow{
+0%{background-position:0 0;}
+100%{background-position:0 400px;}
+}
+
+/* ===== 粒子エフェクト ===== */
+
+html::before{
+
+content:"";
+
+position:fixed;
+inset:0;
+
+background-image:
+radial-gradient(#00eaff55 1px,transparent 1px);
+
+background-size:70px 70px;
+
+animation:particlesMove 30s linear infinite;
+
+opacity:.25;
+
+pointer-events:none;
+
+}
+
+@keyframes particlesMove{
+0%{transform:translateY(0);}
+100%{transform:translateY(-500px);}
+}
+
+/* ===== AIコード雨 ===== */
+
+html::after{
+
+content:"";
+
+position:fixed;
+inset:0;
+
+background-image:
+repeating-linear-gradient(
+180deg,
+transparent,
+transparent 18px,
+#00eaff33 19px
+);
+
+background-size:100% 20px;
+
+animation:matrixRain 8s linear infinite;
+
+opacity:.15;
+
+pointer-events:none;
+
+}
+
+@keyframes matrixRain{
+0%{background-position:0 0;}
+100%{background-position:0 600px;}
+}
+
+/* ===== ヘッダー ===== */
+
+.header{
+
+position:fixed;
+top:0;
+left:0;
+right:0;
+
+height:65px;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+background:rgba(0,20,40,.6);
+
+backdrop-filter:blur(10px);
+
+border-bottom:1px solid #00eaff55;
+
+box-shadow:0 0 30px #00eaff33;
+
+z-index:100;
+
+}
+
+/* ===== ホログラム文字グリッチ ===== */
+
+.logoText{
+
+font-size:24px;
+font-weight:bold;
+letter-spacing:2px;
+
+color:#00eaff;
+
+text-shadow:0 0 10px #00eaff;
+
+animation:logoGlitch 6s infinite;
+
+}
+
+@keyframes logoGlitch{
+
+0%,95%,100%{transform:none;}
+
+96%{transform:translateX(2px);}
+97%{transform:translateX(-2px);}
+98%{transform:translateY(1px);}
+
+}
+
+/* ===== レイアウト ===== */
+
+.container{
+
+max-width:1400px;
+
+margin:80px auto;
+
+padding:15px;
+
+display:flex;
+
+gap:20px;
+
+}
+
+/* ===== ホログラム立体パネル ===== */
+
+.panel{
+
+position:relative;
+
+background:rgba(0,30,60,.45);
+
+backdrop-filter:blur(12px);
+
+border-radius:14px;
+
+padding:16px;
+
+border:1px solid #00eaff33;
+
+box-shadow:
+0 0 25px #00eaff22,
+inset 0 0 15px #00eaff22;
+
+transform-style:preserve-3d;
+
+transition:.25s;
+
+}
+
+.panel:hover{
+
+transform:translateY(-3px) scale(1.01);
+
+box-shadow:
+0 0 35px #00eaff66,
+inset 0 0 30px #00eaff33;
+
+}
+
+/* ===== HUD角フレーム ===== */
+
+.panel::after{
+
+content:"";
+
+position:absolute;
+
+inset:0;
+
+pointer-events:none;
+
+background:
+linear-gradient(#00eaff,#00eaff) left top,
+linear-gradient(#00eaff,#00eaff) right top,
+linear-gradient(#00eaff,#00eaff) left bottom,
+linear-gradient(#00eaff,#00eaff) right bottom;
+
+background-size:
+20px 2px,
+2px 20px;
+
+background-repeat:no-repeat;
+
+opacity:.6;
+
+}
+
+/* ===== ホログラムスキャン ===== */
+
+.panel::before{
+
+content:"";
+
+position:absolute;
+
+inset:0;
+
+border-radius:14px;
+
+background:
+linear-gradient(90deg,transparent,#00eaff33,transparent);
+
+animation:holoScan 4s linear infinite;
+
+pointer-events:none;
+
+}
+
+@keyframes holoScan{
+0%{transform:translateX(-100%);}
+100%{transform:translateX(100%);}
+}
+
+/* ===== カテゴリ ===== */
+
+.categories{
+
+width:260px;
+min-width:260px;
+
+overflow-x:auto;
+
+}
+
+#categoryList{
+
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+
+}
+
+.categoryBtn{
+
+display:flex;
+align-items:center;
+gap:8px;
+
+padding:10px;
+
+border-radius:10px;
+
+cursor:pointer;
+
+background:rgba(0,50,90,.5);
+
+border:1px solid #00eaff33;
+
+transition:.2s;
+
+}
+
+.categoryBtn:hover{
+
+box-shadow:0 0 15px #00eaff;
+
+background:rgba(0,70,120,.6);
+
+}
+
+.categoryBtn img{
+
+width:28px;
+height:28px;
+
+border-radius:6px;
+
+object-fit:cover;
+
+}
+
+/* ===== 商品 ===== */
+
+.products{
+width:420px;
+}
+
+/* ===== 3Dホログラムカード ===== */
+
+.card{
+
+display:flex;
+gap:12px;
+
+padding:14px;
+
+margin-bottom:10px;
+
+cursor:pointer;
+
+border-radius:12px;
+
+background:rgba(0,30,60,.5);
+
+border:1px solid #00eaff33;
+
+transition:transform .1s, box-shadow .2s;
+
+transform-style:preserve-3d;
+
+perspective:600px;
+
+}
+
+.card:hover{
+
+transform:
+rotateX(6deg)
+rotateY(-6deg)
+translateY(-4px)
+scale(1.02);
+
+box-shadow:
+0 10px 40px #00eaff66;
+
+}
+
+.card img{
+
+width:85px;
+height:85px;
+
+border-radius:10px;
+
+object-fit:cover;
+
+}
+
+/* ===== 詳細 ===== */
+
+.detail{
+flex:1;
+min-height:500px;
+}
+
+.detail img{
+max-width:100%;
+margin-top:15px;
+border-radius:12px;
+border:1px solid #00eaff55;
+}
+
+.detail iframe{
+width:100%;
+height:350px;
+margin-top:15px;
+border-radius:12px;
+border:1px solid #00eaff55;
+}
+
+/* ===== モーダル ===== */
+
+.modal{
+
+position:fixed;
+
+inset:0;
+
+background:rgba(0,0,20,.95);
+
+padding:30px;
+
+display:none;
+
+overflow:auto;
+
+z-index:9999;
+
+}
+
+.modal iframe{
+
+width:100%;
+height:420px;
+
+border-radius:12px;
+
+border:1px solid #00eaff55;
+
+}
+
+/* ===== 閉じるボタン ===== */
+
+.closeBtn{
+
+margin-bottom:20px;
+
+padding:12px 22px;
+
+border-radius:10px;
+
+border:1px solid #00eaff;
+
+background:transparent;
+
+color:#00eaff;
+
+cursor:pointer;
+
+}
+
+.closeBtn:hover{
+
+box-shadow:0 0 15px #00eaff;
+
+}
+
+/* ===== SFレーダー ===== */
+
+.radar{
+
+position:fixed;
+
+top:90px;
+left:20px;
+
+width:120px;
+height:120px;
+
+border-radius:50%;
+
+border:1px solid #00eaff55;
+
+box-shadow:0 0 20px #00eaff33;
+
+background:
+radial-gradient(circle,#00eaff22,transparent 70%);
+
+overflow:hidden;
+
+z-index:50;
+
+}
+
+.radar::before{
+
+content:"";
+
+position:absolute;
+
+width:100%;
+height:100%;
+
+background:
+linear-gradient(90deg,transparent,#00eaff55,transparent);
+
+animation:radarSpin 4s linear infinite;
+
+}
+
+@keyframes radarSpin{
+0%{transform:rotate(0deg);}
+100%{transform:rotate(360deg);}
+}
+
+/* ===== スクロールバー ===== */
+
+::-webkit-scrollbar{
+width:8px;
+}
+
+::-webkit-scrollbar-thumb{
+background:#00eaff;
+border-radius:10px;
+}
+
+/* ===== スマホ ===== */
+
+@media(max-width:700px){
+
+.container{
+flex-direction:column;
+}
+
+.categories,
+.products{
+width:100%;
+min-width:100%;
+}
+
+.detail{
+display:none;
+}
+
+.modal iframe{
+height:250px;
+}
+
 }
