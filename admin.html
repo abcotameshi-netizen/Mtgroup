@@ -1,561 +1,278 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>管理画面</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mtgroup</title>
 
-<style>
-
-body{
-margin:0;
-font-family:system-ui;
-background:#0b0f16;
-color:#fff;
-padding:20px;
-}
-
-button{
-margin:4px 2px;
-padding:6px 10px;
-background:#1f2937;
-color:#fff;
-border:none;
-border-radius:6px;
-cursor:pointer;
-}
-
-input, textarea, select{
-width:100%;
-margin:6px 0;
-padding:6px;
-}
-
-.panel{
-background:#111827;
-padding:12px;
-border-radius:8px;
-margin-bottom:20px;
-}
-
-.item{
-background:#1f2937;
-padding:8px;
-border-radius:6px;
-margin:6px 0;
-}
-
-.categoryHeader{
-background:#374150;
-padding:10px;
-border-radius:6px;
-margin-top:8px;
-cursor:pointer;
-}
-
-</style>
-
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<h2>管理画面</h2>
-
-<button onclick="login()">パスワード入力</button>
-<button onclick="logout()">ログアウト</button>
-
-<div id="mainPanel" style="display:none;">
-
-<div class="panel">
-
-<h3>商品追加</h3>
-
-<select id="productCategory"></select>
-
-<input id="pName" placeholder="商品名">
-<input id="pImage" placeholder="画像URL">
-<input id="pVideo" placeholder="YouTube動画URL">
-
-<textarea id="pDesc" placeholder="説明"></textarea>
-
-<select id="pTag">
-<option value="">タグなし</option>
-<option value="人気">人気</option>
-<option value="更新">更新</option>
-</select>
-
-<button onclick="addProduct()">商品追加</button>
-
-<hr>
-
-<div id="productList"></div>
-
-</div>
-
-
-
-<div class="panel">
-
-<h3>カテゴリ追加</h3>
-
-<input id="catName">
-<input id="catImage" placeholder="カテゴリ画像URL">
-
-<button onclick="addCategory()">カテゴリ追加</button>
-
-</div>
-
-
-
-<div class="panel">
-
-<h3>サイトフォント設定</h3>
-
-<select id="fontSelect">
-
-<option value="system-ui">標準フォント</option>
-<option value="'Noto Sans JP',sans-serif">Noto Sans JP</option>
-<option value="Arial,sans-serif">Arial</option>
-<option value="'Orbitron',sans-serif">Orbitron</option>
-<option value="'M PLUS 1p',sans-serif">M PLUS</option>
-
-</select>
-
-<button onclick="saveFont()">フォント保存</button>
-
-</div>
-
-</div>
-
-
-
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-
-import {
-getFirestore,
-collection,
-addDoc,
-deleteDoc,
-doc,
-updateDoc,
-onSnapshot,
-query,
-orderBy
-}
-from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-
-const firebaseConfig={
-apiKey:"AIzaSyAii9UA3YBztj3XE8QErStcf-TpIkFJYWQ",
-authDomain:"mtgroup-df495.firebaseapp.com",
-projectId:"mtgroup-df495",
-storageBucket:"mtgroup-df495.firebasestorage.app",
-messagingSenderId:"33007954637",
-appId:"1:33007954637:web:0a1c249df6764f8d855784"
-};
-
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
-
-
-
-function normalizeYoutube(url){
-
-if(!url) return "";
-
-if(url.includes("watch?v=")) return url;
-
-if(url.includes("youtu.be/"))
-return "https://www.youtube.com/watch?v="+
-url.split("youtu.be/")[1].split("?")[0];
-
-if(url.includes("embed/"))
-return "https://www.youtube.com/watch?v="+
-url.split("embed/")[1].split("?")[0];
-
-return url;
-
-}
-
-
-
-const ADMIN_PASSWORD="mdmd9696";
-
-const LOGIN_KEY="admin_login_time";
-
-const LOGIN_DURATION=24*60*60*1000;
-
-
-
-let categories=[];
-let products=[];
-let openCategories={};
-
-
-
-const productList=document.getElementById("productList");
-const productCategory=document.getElementById("productCategory");
-const mainPanel=document.getElementById("mainPanel");
-
-
-
-window.saveFont=function(){
-
-localStorage.setItem("siteFont",
-document.getElementById("fontSelect").value);
-
-alert("保存しました");
-
-}
-
-
-
-function checkAutoLogin(){
-
-const t=localStorage.getItem(LOGIN_KEY);
-
-if(t && Date.now()-t<LOGIN_DURATION)
-mainPanel.style.display="block";
-
-}
-
-
-
-window.login=function(){
-
-if(prompt("パスワード")==ADMIN_PASSWORD){
-
-localStorage.setItem(LOGIN_KEY,Date.now());
-
-mainPanel.style.display="block";
-
-}
-
-}
-
-
-
-window.logout=function(){
-
-localStorage.removeItem(LOGIN_KEY);
-
-location.reload();
-
-}
-
-
-
-/* カテゴリ追加 */
-
-window.addCategory=async function(){
-
-const name=catName.value.trim();
-const image=catImage.value.trim();
-
-if(!name)return;
-
-await addDoc(collection(db,"categories"),{
-
-name,
-image,
-order:Date.now(),
-updatedAt:Date.now()
-
-});
-
-catName.value="";
-catImage.value="";
-
-}
-
-
-
-/* 商品追加 */
-
-window.addProduct=async function(){
-
-const category=productCategory.value;
-const name=pName.value.trim();
-const desc=pDesc.value;
-
-const image=normalizeYoutube(pImage.value);
-const video=normalizeYoutube(pVideo.value);
-
-const tag=pTag.value;
-
-if(!category||!name)return alert("必須項目不足");
-
-await addDoc(collection(db,"products"),{
-
-category,name,desc,image,video,tag,
-order:Date.now(),
-updatedAt:Date.now()
-
-});
-
-pName.value="";
-pDesc.value="";
-pImage.value="";
-pVideo.value="";
-
-}
-
-
-
-/* 商品削除 */
-
-window.deleteProduct=function(id){
-
-if(confirm("削除しますか"))
-deleteDoc(doc(db,"products",id))
-
-}
-
-
-
-/* 商品編集 */
-
-window.editProduct=async function(p){
-
-const name=prompt("商品名",p.name);
-if(name===null)return;
-
-await updateDoc(doc(db,"products",p.id),{
-
-name,
-desc:prompt("説明",p.desc),
-
-image:normalizeYoutube(prompt("画像URL",p.image)),
-
-video:normalizeYoutube(prompt("動画URL",p.video||"")),
-
-tag:prompt("タグ",p.tag||""),
-
-updatedAt:Date.now()
-
-});
-
-}
-
-
-
-/* 商品上へ */
-
-window.moveProductUp=async function(id){
-
-const s=[...products].sort((a,b)=>a.order-b.order);
-
-const i=s.findIndex(p=>p.id===id);
-
-if(i<=0)return;
-
-await updateDoc(doc(db,"products",s[i].id),{order:s[i-1].order});
-await updateDoc(doc(db,"products",s[i-1].id),{order:s[i].order});
-
-}
-
-
-
-/* 商品下へ */
-
-window.moveProductDown=async function(id){
-
-const s=[...products].sort((a,b)=>a.order-b.order);
-
-const i=s.findIndex(p=>p.id===id);
-
-if(i>=s.length-1)return;
-
-await updateDoc(doc(db,"products",s[i].id),{order:s[i+1].order});
-await updateDoc(doc(db,"products",s[i+1].id),{order:s[i].order});
-
-}
-
-
-
-/* カテゴリ削除 */
-
-window.deleteCategory=async function(id){
-
-if(!confirm("カテゴリ削除しますか？")) return;
-
-await deleteDoc(doc(db,"categories",id));
-
-}
-
-
-
-/* カテゴリ編集 */
-
-window.editCategory=async function(cat){
-
-const name=prompt("カテゴリ名",cat.name);
-
-if(name===null)return;
-
-const image=prompt("画像URL",cat.image||"");
-
-await updateDoc(doc(db,"categories",cat.id),{
-
-name,
-image,
-updatedAt:Date.now()
-
-});
-
-}
-
-
-
-/* カテゴリ移動 */
-
-window.moveCategoryUp=async id=>{
-
-const s=[...categories].sort((a,b)=>a.order-b.order);
-
-const i=s.findIndex(c=>c.id===id);
-
-if(i<=0)return;
-
-await updateDoc(doc(db,"categories",s[i].id),{order:s[i-1].order});
-await updateDoc(doc(db,"categories",s[i-1].id),{order:s[i].order});
-
-}
-
-
-window.moveCategoryDown=async id=>{
-
-const s=[...categories].sort((a,b)=>a.order-b.order);
-
-const i=s.findIndex(c=>c.id===id);
-
-if(i>=s.length-1)return;
-
-await updateDoc(doc(db,"categories",s[i].id),{order:s[i+1].order});
-await updateDoc(doc(db,"categories",s[i+1].id),{order:s[i].order});
-
-}
-
-
-
-function toggleCategory(name){
-
-openCategories[name]=!openCategories[name];
-
-renderProducts();
-
-}
-
-
-
-/* Firebase監視 */
-
-onSnapshot(query(collection(db,"categories"),orderBy("order")),snap=>{
-
-categories=[];
-productCategory.innerHTML="";
-
-snap.forEach(d=>{
-
-const data={id:d.id,...d.data()};
-
-categories.push(data);
-
-const opt=document.createElement("option");
-
-opt.value=data.name;
-opt.textContent=data.name;
-
-productCategory.appendChild(opt);
-
-});
-
-renderProducts();
-
-});
-
-
-onSnapshot(query(collection(db,"products"),orderBy("order")),snap=>{
-
-products=[];
-
-snap.forEach(d=>{
-
-products.push({id:d.id,...d.data()});
-
-});
-
-renderProducts();
-
-});
-
-
-
-function renderProducts(){
-
-productList.innerHTML="";
-
-categories.forEach(cat=>{
-
-const header=document.createElement("div");
-
-header.className="categoryHeader";
-
-header.innerHTML=`
-
-${openCategories[cat.name]?"▼":"▶"} ${cat.name}
-
-<button onclick="moveCategoryUp('${cat.id}')">▲</button>
-<button onclick="moveCategoryDown('${cat.id}')">▼</button>
-<button onclick='editCategory(${JSON.stringify(cat)})'>編集</button>
-<button onclick="deleteCategory('${cat.id}')">削除</button>
-
-`;
-
-header.onclick=()=>toggleCategory(cat.name);
-
-productList.appendChild(header);
-
-
-if(!openCategories[cat.name])return;
-
-
-products
-
-.filter(p=>p.category===cat.name)
-
-.forEach(p=>{
-
-const div=document.createElement("div");
-
-div.className="item";
-
-div.innerHTML=`
-
-${p.name}
-
-<button onclick="moveProductUp('${p.id}')">▲</button>
-<button onclick="moveProductDown('${p.id}')">▼</button>
-<button onclick='editProduct(${JSON.stringify(p)})'>編集</button>
-<button onclick="deleteProduct('${p.id}')">削除</button>
-
-`;
-
-productList.appendChild(div);
-
-});
-
-});
-
-}
-
-
-
-checkAutoLogin()
-
-</script>
+  <div class="header">
+    <div class="logoText">Mtgroup</div>
+  </div>
+
+  <div class="container">
+
+    <div class="panel categories">
+      <h3>カテゴリ</h3>
+      <div id="categoryList"></div>
+    </div>
+
+    <div class="panel products">
+      <input id="searchBox" placeholder="検索" oninput="searchAll()">
+      <div id="productList"></div>
+    </div>
+
+    <div class="panel detail">
+      <h3>商品説明</h3>
+      <div id="productDetail"></div>
+    </div>
+
+  </div>
+
+  <div id="modal" class="modal"></div>
+
+  <!-- ✅ 見た目演出用（マウス追従光 / 3Dカード傾き） -->
+  <script>
+    // ===== マウス追従ホログラム光（style.cssの --mx/--my を動かす）=====
+    (()=>{
+      const root = document.documentElement;
+      const set = (x,y)=>{
+        root.style.setProperty("--mx", x + "px");
+        root.style.setProperty("--my", y + "px");
+      };
+
+      // 初期位置
+      set(window.innerWidth * 0.55, window.innerHeight * 0.35);
+
+      window.addEventListener("pointermove",(e)=>{
+        set(e.clientX, e.clientY);
+      },{passive:true});
+
+      window.addEventListener("touchmove",(e)=>{
+        const t = e.touches && e.touches[0];
+        if(!t) return;
+        set(t.clientX, t.clientY);
+      },{passive:true});
+    })();
+
+    // ===== カード3D傾き（動的に追加される .card にも効く）=====
+    (()=>{
+      let lastCard = null;
+
+      const resetCard = (card)=>{
+        if(!card) return;
+        card.style.transform = "";
+        card.style.animationPlayState = "";
+      };
+
+      document.addEventListener("pointermove",(e)=>{
+        const el = document.elementFromPoint(e.clientX, e.clientY);
+        const card = el && el.closest ? el.closest(".card") : null;
+
+        if(card !== lastCard){
+          resetCard(lastCard);
+          lastCard = card;
+        }
+        if(!card) return;
+
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const cx = rect.width / 2;
+        const cy = rect.height / 2;
+
+        const rx = (y - cy) / 12;     // 傾き強さ
+        const ry = (cx - x) / 12;
+
+        // 浮遊アニメが入ってる場合はホバー中だけ止める
+        card.style.animationPlayState = "paused";
+
+        card.style.transform =
+          `rotateX(${rx}deg) rotateY(${ry}deg) scale(1.03)`;
+      },{passive:true});
+
+      document.addEventListener("pointerleave",()=>{
+        resetCard(lastCard);
+        lastCard = null;
+      });
+    })();
+  </script>
+
+  <!-- ✅ あなたのFirebase/描画ロジック（そのまま） -->
+  <script type="module">
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey:"AIzaSyDDhUgvH7o4SymhG3QVTRe6CDAlJM_Vk_A",
+      authDomain:"project-3088108151926999605.firebaseapp.com",
+      projectId:"project-3088108151926999605",
+      storageBucket:"project-3088108151926999605.firebasestorage.app",
+      messagingSenderId:"331871777494",
+      appId:"1:331871777494:web:8de28a405de387f7240f77"
+    };
+
+    const app=initializeApp(firebaseConfig);
+    const db=getFirestore(app);
+
+    let categories=[];
+    let products=[];
+    let currentCategory=null;
+
+    const categoryList=document.getElementById("categoryList");
+    const productList=document.getElementById("productList");
+    const detail=document.getElementById("productDetail");
+    const modal=document.getElementById("modal");
+
+    /* ===== 動画URL自動変換 ===== */
+    function convertVideoUrl(url){
+      if(!url) return "";
+
+      if(url.includes("watch?v=")){
+        return "https://www.youtube.com/embed/"+url.split("watch?v=")[1].split("&")[0];
+      }
+      if(url.includes("youtu.be/")){
+        return "https://www.youtube.com/embed/"+url.split("youtu.be/")[1].split("?")[0];
+      }
+      if(url.includes("youtube.com/embed/")){
+        return url;
+      }
+      if(url.match(/\.(mp4|webm|ogg)$/i)){
+        return url;
+      }
+      if(url.includes("vimeo.com/")){
+        return "https://player.vimeo.com/video/"+url.split("vimeo.com/")[1];
+      }
+      return url;
+    }
+
+    function getCategoryImage(c){
+      return c.img || c.image || "";
+    }
+
+    /* カテゴリ描画 */
+    function renderCategories(){
+      categoryList.innerHTML="";
+
+      categories.forEach(c=>{
+        const div=document.createElement("div");
+        div.className="categoryBtn";
+
+        div.onclick=()=>{
+          currentCategory=c.name;
+          renderProducts();
+          detail.innerHTML="";
+        };
+
+        div.innerHTML=`
+          <div style="display:flex;align-items:center;gap:10px">
+            <img src="${getCategoryImage(c)}" onerror="this.style.display='none'">
+            <span>${c.name}</span>
+          </div>
+        `;
+
+        categoryList.appendChild(div);
+      });
+    }
+
+    /* 商品一覧 */
+    function renderProducts(){
+      productList.innerHTML="";
+
+      products
+        .filter(p=>p.category===currentCategory)
+        .forEach(p=>{
+          const div=document.createElement("div");
+          div.className="card";
+          div.onclick=()=>showDetail(p);
+
+          div.innerHTML=`
+            <img src="${p.image||""}" onerror="this.style.display='none'">
+            <div class="title">${p.name}</div>
+          `;
+
+          productList.appendChild(div);
+        });
+    }
+
+    /* 検索 */
+    window.searchAll=function(){
+      const q=document.getElementById("searchBox").value.toLowerCase();
+      productList.innerHTML="";
+
+      products
+        .filter(p=>
+          p.category===currentCategory &&
+          (p.name||"").toLowerCase().includes(q)
+        )
+        .forEach(p=>{
+          const div=document.createElement("div");
+          div.className="card";
+          div.onclick=()=>showDetail(p);
+
+          div.innerHTML=`
+            <img src="${p.image||""}" onerror="this.style.display='none'">
+            <div class="title">${p.name}</div>
+          `;
+
+          productList.appendChild(div);
+        });
+    }
+
+    /* 説明表示 */
+    function showDetail(p){
+      let html=`
+        <h2>${p.name}</h2>
+        <div class="desc">${(p.desc||"").replace(/\n/g,"<br>")}</div>
+      `;
+
+      if(p.image){
+        html+=`<img src="${p.image}">`;
+      }
+
+      if(p.video){
+        const v=convertVideoUrl(p.video);
+
+        if(v.match(/\.(mp4|webm|ogg)$/i)){
+          html+=`<video src="${v}" controls style="width:100%;margin-top:15px;"></video>`;
+        }else{
+          html+=`<iframe src="${v}" allowfullscreen style="width:100%;height:350px;margin-top:15px;border:none;"></iframe>`;
+        }
+      }
+
+      if(window.innerWidth>700){
+        detail.innerHTML=html;
+      }else{
+        modal.innerHTML=`
+          <button class="closeBtn" onclick="closeModal()">閉じる</button>
+          ${html}
+        `;
+        modal.style.display="block";
+      }
+    }
+
+    window.closeModal=function(){
+      modal.style.display="none";
+    }
+
+    /* Firebase */
+    onSnapshot(collection(db,"categories"),s=>{
+      categories=s.docs.map(d=>d.data());
+      renderCategories();
+    });
+
+    onSnapshot(collection(db,"products"),s=>{
+      products=s.docs.map(d=>d.data());
+    });
+
+  </script>
 
 </body>
 </html>
