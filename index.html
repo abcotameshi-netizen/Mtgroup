@@ -1,53 +1,53 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Mtgroup</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mtgroup</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <div class="header">
-    <div class="logoText">Mtgroup</div>
-  </div>
+<div class="header">
+<div class="logoText">Mtgroup</div>
+</div>
 
-  <div class="container">
+<div class="container">
 
-    <div class="panel categories">
-      <h3>カテゴリ</h3>
-      <div id="categoryList"></div>
-    </div>
+<div class="panel categories">
+<h3>カテゴリ</h3>
+<div id="categoryList"></div>
+</div>
 
-    <div class="panel products">
-      <input id="searchBox" placeholder="検索" oninput="searchAll()">
-      <div id="productList"></div>
-    </div>
+<div class="panel products">
+<input id="searchBox" placeholder="検索" oninput="searchAll()">
+<div id="productList"></div>
+</div>
 
-    <div class="panel detail">
-      <h3>商品説明</h3>
-      <div id="productDetail"></div>
-    </div>
+<div class="panel detail">
+<h3>商品説明</h3>
+<div id="productDetail"></div>
+</div>
 
-  </div>
+</div>
 
-  <div id="modal" class="modal"></div>
+<div id="modal" class="modal"></div>
 
 <script>
 (()=>{
-  const root=document.documentElement;
-  const set=(x,y)=>{
-    root.style.setProperty("--mx",x+"px");
-    root.style.setProperty("--my",y+"px");
-  };
-  set(window.innerWidth*0.55,window.innerHeight*0.35);
+const root=document.documentElement;
+const set=(x,y)=>{
+root.style.setProperty("--mx",x+"px");
+root.style.setProperty("--my",y+"px");
+};
+set(window.innerWidth*0.55,window.innerHeight*0.35);
 
-  window.addEventListener("pointermove",(e)=>{
-    set(e.clientX,e.clientY);
-  },{passive:true});
+window.addEventListener("pointermove",(e)=>{
+set(e.clientX,e.clientY);
+},{passive:true});
 })();
 </script>
 
@@ -57,14 +57,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getStorage, ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-const firebaseConfig = {
-apiKey: "AIzaSyAii9UA3YBztj3XE8QErStcf-TpIkFJYWQ",
-authDomain: "mtgroup-df495.firebaseapp.com",
-projectId: "mtgroup-df495",
-storageBucket: "mtgroup-df495.firebasestorage.app",
-messagingSenderId: "33007954637",
-appId: "1:33007954637:web:0a1c249df6764f8d855784",
-measurementId: "G-CMNF3DKT7G"
+const firebaseConfig={
+apiKey:"AIzaSyAii9UA3YBztj3XE8QErStcf-TpIkFJYWQ",
+authDomain:"mtgroup-df495.firebaseapp.com",
+projectId:"mtgroup-df495",
+storageBucket:"mtgroup-df495.firebasestorage.app",
+messagingSenderId:"33007954637",
+appId:"1:33007954637:web:0a1c249df6764f8d855784",
+measurementId:"G-CMNF3DKT7G"
 };
 
 const app=initializeApp(firebaseConfig);
@@ -79,8 +79,6 @@ const categoryList=document.getElementById("categoryList");
 const productList=document.getElementById("productList");
 const detail=document.getElementById("productDetail");
 const modal=document.getElementById("modal");
-
-/* ===== 動画URL変換 ===== */
 
 function convertVideoUrl(url){
 
@@ -109,7 +107,7 @@ return "https://player.vimeo.com/video/"+url.split("vimeo.com/")[1];
 return url;
 }
 
-/* ===== メディアリンク対応画像取得 ===== */
+/* ===== 画像URL判定（強化版） ===== */
 
 async function resolveImage(url){
 
@@ -119,12 +117,11 @@ if(typeof url!=="string") return "";
 
 const v=url.trim();
 
-/* すでに表示できるURL */
+/* 普通のURL */
 
 if(
-v.startsWith("http") ||
-v.includes("firebasestorage.googleapis.com") ||
-v.startsWith("data:image")
+v.startsWith("http://") ||
+v.startsWith("https://")
 ){
 return v;
 }
@@ -143,6 +140,172 @@ return "";
 /* Storageパス */
 
 try{
+const r=ref(storage,v);
+return await getDownloadURL(r);
+}catch{
+return "";
+}
+
+}
+
+async function getCategoryImage(c){
+
+const raw=
+c.img ||
+c.image ||
+c.icon ||
+c.mediaLink ||
+c.downloadURL ||
+"";
+
+return await resolveImage(raw);
+
+}
+
+/* ===== カテゴリ描画 ===== */
+
+async function renderCategories(){
+
+categoryList.innerHTML="";
+
+for(const c of categories){
+
+const div=document.createElement("div");
+div.className="categoryBtn";
+
+div.onclick=()=>{
+currentCategory=c.name;
+renderProducts();
+detail.innerHTML="";
+};
+
+let img=await getCategoryImage(c);
+
+if(!img){
+img="https://dummyimage.com/120x120/001a2b/00eaff&text=+";
+}
+
+div.innerHTML=`
+<div style="display:flex;align-items:center;gap:10px">
+<img src="${img}" onerror="this.src='https://dummyimage.com/120x120/001a2b/00eaff&text=+'">
+<span>${c.name}</span>
+</div>
+`;
+
+categoryList.appendChild(div);
+
+}
+
+}
+
+function renderProducts(){
+
+productList.innerHTML="";
+
+products
+.filter(p=>p.category===currentCategory)
+.forEach(p=>{
+
+const div=document.createElement("div");
+div.className="card";
+div.onclick=()=>showDetail(p);
+
+div.innerHTML=`
+<img src="${p.image||""}" onerror="this.style.display='none'">
+<div class="title">${p.name}</div>
+`;
+
+productList.appendChild(div);
+
+});
+
+}
+
+window.searchAll=function(){
+
+const q=document.getElementById("searchBox").value.toLowerCase();
+
+productList.innerHTML="";
+
+products
+.filter(p=>
+p.category===currentCategory &&
+(p.name||"").toLowerCase().includes(q)
+)
+.forEach(p=>{
+
+const div=document.createElement("div");
+div.className="card";
+div.onclick=()=>showDetail(p);
+
+div.innerHTML=`
+<img src="${p.image||""}" onerror="this.style.display='none'">
+<div class="title">${p.name}</div>
+`;
+
+productList.appendChild(div);
+
+});
+
+}
+
+function showDetail(p){
+
+let html=`
+<h2>${p.name}</h2>
+<div class="desc">${(p.desc||"").replace(/\n/g,"<br>")}</div>
+`;
+
+if(p.image){
+html+=`<img src="${p.image}">`;
+}
+
+if(p.video){
+
+const v=convertVideoUrl(p.video);
+
+if(v.match(/\.(mp4|webm|ogg)$/i)){
+html+=`<video src="${v}" controls style="width:100%;margin-top:15px;"></video>`;
+}else{
+html+=`<iframe src="${v}" allowfullscreen style="width:100%;height:350px;margin-top:15px;border:none;"></iframe>`;
+}
+
+}
+
+if(window.innerWidth>700){
+
+detail.innerHTML=html;
+
+}else{
+
+modal.innerHTML=`
+<button class="closeBtn" onclick="closeModal()">閉じる</button>
+${html}
+`;
+
+modal.style.display="block";
+
+}
+
+}
+
+window.closeModal=function(){
+modal.style.display="none";
+}
+
+onSnapshot(collection(db,"categories"),async s=>{
+categories=s.docs.map(d=>d.data());
+await renderCategories();
+});
+
+onSnapshot(collection(db,"products"),s=>{
+products=s.docs.map(d=>d.data());
+});
+
+</script>
+
+</body>
+</html>try{
 const r=ref(storage,v);
 return await getDownloadURL(r);
 }catch{
