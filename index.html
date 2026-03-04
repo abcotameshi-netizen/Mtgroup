@@ -108,8 +108,8 @@
   <script type="module">
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+    import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    
     const firebaseConfig = {
   apiKey: "AIzaSyAii9UA3YBztj3XE8QErStcf-TpIkFJYWQ",
   authDomain: "mtgroup-df495.firebaseapp.com",
@@ -263,14 +263,20 @@
     }
 
     /* Firebase */
-    onSnapshot(collection(db,"categories"),s=>{
-      categories=s.docs.map(d=>d.data());
-      renderCategories();
-    });
+    onSnapshot(
+    query(collection(db,"categories"),orderBy("order")),
+  s=>{
+    categories=s.docs.map(d=>d.data());
+    renderCategories();
+    }
+);
 
-    onSnapshot(collection(db,"products"),s=>{
-      products=s.docs.map(d=>d.data());
-    });
+    onSnapshot(
+    query(collection(db,"products"),orderBy("order")),
+  s=>{
+    products=s.docs.map(d=>d.data());
+    }
+);
 
   </script>
 
