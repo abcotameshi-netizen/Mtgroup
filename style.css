@@ -609,25 +609,4 @@ width:8px;
 background:#00eaff;
 border-radius:10px;
 }
-
-}
-
-/* ===== 追加（画像サイズだけ調整） ===== */
-
-@media(min-width:701px){
-
-.card img{
-max-width:85px;
-height:85px;
-}
-
-}
-
-@media(max-width:700px){
-
-.card img{
-max-width:70px;
-height:70px;
-}
-
 }
