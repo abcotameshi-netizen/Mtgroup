@@ -258,6 +258,10 @@ min-width:260px;
 display:flex;
 flex-wrap:wrap;
 gap:10px;
+  
+display:flex;
+flex-direction:column;
+gap:10px;
 
 }
 
