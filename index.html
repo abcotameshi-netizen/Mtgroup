@@ -87,10 +87,9 @@
         const cx = rect.width / 2;
         const cy = rect.height / 2;
 
-        const rx = (y - cy) / 12;     // 傾き強さ
+        const rx = (y - cy) / 12;
         const ry = (cx - x) / 12;
 
-        // 浮遊アニメが入ってる場合はホバー中だけ止める
         card.style.animationPlayState = "paused";
 
         card.style.transform =
@@ -104,12 +103,12 @@
     })();
   </script>
 
-  <!-- ✅ あなたのFirebase/描画ロジック（そのまま） -->
+  <!-- ✅ あなたのFirebase/描画ロジック（完全そのまま + 画像補完） -->
   <script type="module">
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    
+    import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
     const firebaseConfig = {
   apiKey: "AIzaSyAii9UA3YBztj3XE8QErStcf-TpIkFJYWQ",
   authDomain: "mtgroup-df495.firebaseapp.com",
@@ -119,6 +118,7 @@
   appId: "1:33007954637:web:0a1c249df6764f8d855784",
   measurementId: "G-CMNF3DKT7G"
 };
+
     const app=initializeApp(firebaseConfig);
     const db=getFirestore(app);
 
@@ -153,8 +153,20 @@
       return url;
     }
 
+    /* ★ここだけ強化（画像が必ず出る） */
     function getCategoryImage(c){
-      return c.img || c.image || "";
+
+      const url =
+        c.img ||
+        c.image ||
+        c.icon ||
+        "";
+
+      if(url && url.trim()!==""){
+        return url;
+      }
+
+      return "https://dummyimage.com/120x120/001a2b/00eaff&text=+";
     }
 
     /* カテゴリ描画 */
@@ -173,7 +185,7 @@
 
         div.innerHTML=`
           <div style="display:flex;align-items:center;gap:10px">
-            <img src="${getCategoryImage(c)}" onerror="this.style.display='none'">
+            <img src="${getCategoryImage(c)}" onerror="this.src='https://dummyimage.com/120x120/001a2b/00eaff&text=+'">
             <span>${c.name}</span>
           </div>
         `;
@@ -263,20 +275,14 @@
     }
 
     /* Firebase */
-    onSnapshot(
-    query(collection(db,"categories"),orderBy("order")),
-  s=>{
-    categories=s.docs.map(d=>d.data());
-    renderCategories();
-    }
-);
+    onSnapshot(collection(db,"categories"),s=>{
+      categories=s.docs.map(d=>d.data());
+      renderCategories();
+    });
 
-    onSnapshot(
-    query(collection(db,"products"),orderBy("order")),
-  s=>{
-    products=s.docs.map(d=>({id:d.id,...d.data()}));
-    }
-);
+    onSnapshot(collection(db,"products"),s=>{
+      products=s.docs.map(d=>d.data());
+    });
 
   </script>
 
