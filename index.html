@@ -36,323 +36,286 @@
 
   <div id="modal" class="modal"></div>
 
-  <!-- ✅ 見た目演出用（マウス追従光 / 3Dカード傾き） -->
-  <script>
-    // ===== マウス追従ホログラム光（style.cssの --mx/--my を動かす）=====
-    (()=>{
-      const root = document.documentElement;
-      const set = (x,y)=>{
-        root.style.setProperty("--mx", x + "px");
-        root.style.setProperty("--my", y + "px");
-      };
+<script>
+(()=>{
+  const root=document.documentElement;
+  const set=(x,y)=>{
+    root.style.setProperty("--mx",x+"px");
+    root.style.setProperty("--my",y+"px");
+  };
+  set(window.innerWidth*0.55,window.innerHeight*0.35);
 
-      // 初期位置
-      set(window.innerWidth * 0.55, window.innerHeight * 0.35);
+  window.addEventListener("pointermove",(e)=>{
+    set(e.clientX,e.clientY);
+  },{passive:true});
+})();
+</script>
 
-      window.addEventListener("pointermove",(e)=>{
-        set(e.clientX, e.clientY);
-      },{passive:true});
+<script type="module">
 
-      window.addEventListener("touchmove",(e)=>{
-        const t = e.touches && e.touches[0];
-        if(!t) return;
-        set(t.clientX, t.clientY);
-      },{passive:true});
-    })();
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-    // ===== カード3D傾き（動的に追加される .card にも効く）=====
-    (()=>{
-      let lastCard = null;
-
-      const resetCard = (card)=>{
-        if(!card) return;
-        card.style.transform = "";
-        card.style.animationPlayState = "";
-      };
-
-      document.addEventListener("pointermove",(e)=>{
-        const el = document.elementFromPoint(e.clientX, e.clientY);
-        const card = el && el.closest ? el.closest(".card") : null;
-
-        if(card !== lastCard){
-          resetCard(lastCard);
-          lastCard = card;
-        }
-        if(!card) return;
-
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        const cx = rect.width / 2;
-        const cy = rect.height / 2;
-
-        const rx = (y - cy) / 12;     // 傾き強さ
-        const ry = (cx - x) / 12;
-
-        // 浮遊アニメが入ってる場合はホバー中だけ止める
-        card.style.animationPlayState = "paused";
-
-        card.style.transform =
-          `rotateX(${rx}deg) rotateY(${ry}deg) scale(1.03)`;
-      },{passive:true});
-
-      document.addEventListener("pointerleave",()=>{
-        resetCard(lastCard);
-        lastCard = null;
-      });
-    })();
-  </script>
-
-  <!-- ✅ あなたのFirebase/描画ロジック（そのまま + アイコン対応追加） -->
-  <script type="module">
-
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-    /* ★追加：StorageからdownloadURLを取得するため */
-    import { getStorage, ref as storageRef, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
-
-    const firebaseConfig = {
-  apiKey: "AIzaSyAii9UA3YBztj3XE8QErStcf-TpIkFJYWQ",
-  authDomain: "mtgroup-df495.firebaseapp.com",
-  projectId: "mtgroup-df495",
-  storageBucket: "mtgroup-df495.firebasestorage.app",
-  messagingSenderId: "33007954637",
-  appId: "1:33007954637:web:0a1c249df6764f8d855784",
-  measurementId: "G-CMNF3DKT7G"
+const firebaseConfig = {
+apiKey: "AIzaSyAii9UA3YBztj3XE8QErStcf-TpIkFJYWQ",
+authDomain: "mtgroup-df495.firebaseapp.com",
+projectId: "mtgroup-df495",
+storageBucket: "mtgroup-df495.firebasestorage.app",
+messagingSenderId: "33007954637",
+appId: "1:33007954637:web:0a1c249df6764f8d855784",
+measurementId: "G-CMNF3DKT7G"
 };
-    const app=initializeApp(firebaseConfig);
-    const db=getFirestore(app);
 
-    /* ★追加：Storageインスタンス */
-    const storage = getStorage(app);
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+const storage=getStorage(app);
 
-    let categories=[];
-    let products=[];
-    let currentCategory=null;
+let categories=[];
+let products=[];
+let currentCategory=null;
 
-    const categoryList=document.getElementById("categoryList");
-    const productList=document.getElementById("productList");
-    const detail=document.getElementById("productDetail");
-    const modal=document.getElementById("modal");
+const categoryList=document.getElementById("categoryList");
+const productList=document.getElementById("productList");
+const detail=document.getElementById("productDetail");
+const modal=document.getElementById("modal");
 
-    /* ===== 動画URL自動変換 ===== */
-    function convertVideoUrl(url){
-      if(!url) return "";
+/* ===== 動画URL変換 ===== */
 
-      if(url.includes("watch?v=")){
-        return "https://www.youtube.com/embed/"+url.split("watch?v=")[1].split("&")[0];
-      }
-      if(url.includes("youtu.be/")){
-        return "https://www.youtube.com/embed/"+url.split("youtu.be/")[1].split("?")[0];
-      }
-      if(url.includes("youtube.com/embed/")){
-        return url;
-      }
-      if(url.match(/\.(mp4|webm|ogg)$/i)){
-        return url;
-      }
-      if(url.includes("vimeo.com/")){
-        return "https://player.vimeo.com/video/"+url.split("vimeo.com/")[1];
-      }
-      return url;
-    }
+function convertVideoUrl(url){
 
-    /* ===== 画像の元データ取得（そのまま） ===== */
-    function getCategoryImage(c){
-      return c.img || c.image || c.icon || "";
-    }
+if(!url) return "";
 
-    /* ★追加：カテゴリ画像が空/無効なときのダミー */
-    const CATEGORY_FALLBACK =
-      "data:image/svg+xml;charset=utf-8," +
-      encodeURIComponent(`
-<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120">
-  <defs>
-    <radialGradient id="g" cx="30%" cy="30%">
-      <stop offset="0%" stop-color="#00eaff" stop-opacity=".55"/>
-      <stop offset="100%" stop-color="#001a2b" stop-opacity="1"/>
-    </radialGradient>
-  </defs>
-  <rect width="120" height="120" rx="18" fill="url(#g)"/>
-  <path d="M28 72 L52 48 L69 63 L92 41" stroke="#cfefff" stroke-width="6" fill="none" opacity=".8"/>
-</svg>`);
+if(url.includes("watch?v=")){
+return "https://www.youtube.com/embed/"+url.split("watch?v=")[1].split("&")[0];
+}
 
-    /* ★追加：Firestoreの icon/img/image が
-       - http(s) URL → そのまま
-       - gs://... or storageパス → downloadURLに変換して c.__imgUrl に保存
-    */
-    async function hydrateCategoryImages(list){
-      return Promise.all(list.map(async (c)=>{
-        try{
-          const raw = getCategoryImage(c);
+if(url.includes("youtu.be/")){
+return "https://www.youtube.com/embed/"+url.split("youtu.be/")[1].split("?")[0];
+}
 
-          // 文字列じゃない場合（オブジェクト等）はスキップ
-          if(typeof raw !== "string"){
-            c.__imgUrl = "";
-            return c;
-          }
+if(url.includes("youtube.com/embed/")){
+return url;
+}
 
-          const v = raw.trim();
-          if(!v){
-            c.__imgUrl = "";
-            return c;
-          }
+if(url.match(/\.(mp4|webm|ogg)$/i)){
+return url;
+}
 
-          // すでに表示できるURL
-          if(/^https?:\/\//i.test(v) || v.startsWith("data:image/")){
-            c.__imgUrl = v;
-            return c;
-          }
+if(url.includes("vimeo.com/")){
+return "https://player.vimeo.com/video/"+url.split("vimeo.com/")[1];
+}
 
-          // gs:// または storage のパスっぽい場合 → downloadURLへ
-          // 例: "gs://bucket/path/to.png"  または  "categories/icon.png"
-          const r = storageRef(storage, v);
-          const url = await getDownloadURL(r);
-          c.__imgUrl = url;
-          return c;
+return url;
+}
 
-        }catch(e){
-          console.warn("カテゴリ画像の変換に失敗:", c?.name, e);
-          c.__imgUrl = "";
-          return c;
-        }
-      }));
-    }
+/* ===== メディアリンク対応画像取得 ===== */
 
-    /* カテゴリ描画 */
-    function renderCategories(){
-      categoryList.innerHTML="";
+async function resolveImage(url){
 
-      categories.forEach(c=>{
-        const div=document.createElement("div");
-        div.className="categoryBtn";
+if(!url) return "";
 
-        div.onclick=()=>{
-          currentCategory=c.name;
-          renderProducts();
-          detail.innerHTML="";
-        };
+if(typeof url!=="string") return "";
 
-        /* ★ここは削らず “安全に” 表示するよう onerror を変更
-           - 表示を消すのではなく fallback に置換
-           - さらに __imgUrl があればそれを使う
-        */
-        const src = (c.__imgUrl && String(c.__imgUrl).trim()!=="")
-          ? c.__imgUrl
-          : getCategoryImage(c);
+const v=url.trim();
 
-        const safeSrc = (src && String(src).trim()!=="") ? src : CATEGORY_FALLBACK;
+/* すでに表示できるURL */
 
-        div.innerHTML=`
-          <div style="display:flex;align-items:center;gap:10px">
-            <img src="${safeSrc}" onerror="this.onerror=null;this.src='${CATEGORY_FALLBACK}'">
-            <span>${c.name}</span>
-          </div>
-        `;
+if(
+v.startsWith("http") ||
+v.includes("firebasestorage.googleapis.com") ||
+v.startsWith("data:image")
+){
+return v;
+}
 
-        categoryList.appendChild(div);
-      });
-    }
+/* gs:// */
 
-    /* 商品一覧 */
-    function renderProducts(){
-      productList.innerHTML="";
+if(v.startsWith("gs://")){
+try{
+const r=ref(storage,v);
+return await getDownloadURL(r);
+}catch{
+return "";
+}
+}
 
-      products
-        .filter(p=>p.category===currentCategory)
-        .forEach(p=>{
-          const div=document.createElement("div");
-          div.className="card";
-          div.onclick=()=>showDetail(p);
+/* Storageパス */
 
-          div.innerHTML=`
-            <img src="${p.image||""}" onerror="this.style.display='none'">
-            <div class="title">${p.name}</div>
-          `;
+try{
+const r=ref(storage,v);
+return await getDownloadURL(r);
+}catch{
+return "";
+}
 
-          productList.appendChild(div);
-        });
-    }
+}
 
-    /* 検索 */
-    window.searchAll=function(){
-      const q=document.getElementById("searchBox").value.toLowerCase();
-      productList.innerHTML="";
+/* ===== カテゴリ画像取得 ===== */
 
-      products
-        .filter(p=>
-          p.category===currentCategory &&
-          (p.name||"").toLowerCase().includes(q)
-        )
-        .forEach(p=>{
-          const div=document.createElement("div");
-          div.className="card";
-          div.onclick=()=>showDetail(p);
+async function getCategoryImage(c){
 
-          div.innerHTML=`
-            <img src="${p.image||""}" onerror="this.style.display='none'">
-            <div class="title">${p.name}</div>
-          `;
+const raw=
+c.img ||
+c.image ||
+c.icon ||
+c.mediaLink ||
+c.downloadURL ||
+"";
 
-          productList.appendChild(div);
-        });
-    }
+return await resolveImage(raw);
 
-    /* 説明表示 */
-    function showDetail(p){
-      let html=`
-        <h2>${p.name}</h2>
-        <div class="desc">${(p.desc||"").replace(/\n/g,"<br>")}</div>
-      `;
+}
 
-      if(p.image){
-        html+=`<img src="${p.image}">`;
-      }
+/* ===== カテゴリ描画 ===== */
 
-      if(p.video){
-        const v=convertVideoUrl(p.video);
+async function renderCategories(){
 
-        if(v.match(/\.(mp4|webm|ogg)$/i)){
-          html+=`<video src="${v}" controls style="width:100%;margin-top:15px;"></video>`;
-        }else{
-          html+=`<iframe src="${v}" allowfullscreen style="width:100%;height:350px;margin-top:15px;border:none;"></iframe>`;
-        }
-      }
+categoryList.innerHTML="";
 
-      if(window.innerWidth>700){
-        detail.innerHTML=html;
-      }else{
-        modal.innerHTML=`
-          <button class="closeBtn" onclick="closeModal()">閉じる</button>
-          ${html}
-        `;
-        modal.style.display="block";
-      }
-    }
+for(const c of categories){
 
-    window.closeModal=function(){
-      modal.style.display="none";
-    }
+const div=document.createElement("div");
+div.className="categoryBtn";
 
-    /* Firebase */
-    onSnapshot(collection(db,"categories"),async (s)=>{
-      // ★ここも削らず、画像変換を “追加” する
-      const raw = s.docs.map(d=>d.data());
+div.onclick=()=>{
+currentCategory=c.name;
+renderProducts();
+detail.innerHTML="";
+};
 
-      // デバッグ：カテゴリの中身を確認（iconがどう入ってるか見える）
-      console.log("categories raw:", raw);
+let img=await getCategoryImage(c);
 
-      categories = await hydrateCategoryImages(raw);
-      renderCategories();
-    });
+if(!img){
+img="https://dummyimage.com/120x120/001a2b/00eaff&text=+";
+}
 
-    onSnapshot(collection(db,"products"),s=>{
-      products=s.docs.map(d=>d.data());
-    });
+div.innerHTML=`
+<div style="display:flex;align-items:center;gap:10px">
+<img src="${img}" onerror="this.src='https://dummyimage.com/120x120/001a2b/00eaff&text=+'">
+<span>${c.name}</span>
+</div>
+`;
 
-  </script>
+categoryList.appendChild(div);
+
+}
+
+}
+
+/* ===== 商品一覧 ===== */
+
+function renderProducts(){
+
+productList.innerHTML="";
+
+products
+.filter(p=>p.category===currentCategory)
+.forEach(p=>{
+
+const div=document.createElement("div");
+div.className="card";
+div.onclick=()=>showDetail(p);
+
+div.innerHTML=`
+<img src="${p.image||""}" onerror="this.style.display='none'">
+<div class="title">${p.name}</div>
+`;
+
+productList.appendChild(div);
+
+});
+
+}
+
+/* ===== 検索 ===== */
+
+window.searchAll=function(){
+
+const q=document.getElementById("searchBox").value.toLowerCase();
+
+productList.innerHTML="";
+
+products
+.filter(p=>
+p.category===currentCategory &&
+(p.name||"").toLowerCase().includes(q)
+)
+.forEach(p=>{
+
+const div=document.createElement("div");
+div.className="card";
+div.onclick=()=>showDetail(p);
+
+div.innerHTML=`
+<img src="${p.image||""}" onerror="this.style.display='none'">
+<div class="title">${p.name}</div>
+`;
+
+productList.appendChild(div);
+
+});
+
+}
+
+/* ===== 詳細 ===== */
+
+function showDetail(p){
+
+let html=`
+<h2>${p.name}</h2>
+<div class="desc">${(p.desc||"").replace(/\n/g,"<br>")}</div>
+`;
+
+if(p.image){
+html+=`<img src="${p.image}">`;
+}
+
+if(p.video){
+
+const v=convertVideoUrl(p.video);
+
+if(v.match(/\.(mp4|webm|ogg)$/i)){
+html+=`<video src="${v}" controls style="width:100%;margin-top:15px;"></video>`;
+}else{
+html+=`<iframe src="${v}" allowfullscreen style="width:100%;height:350px;margin-top:15px;border:none;"></iframe>`;
+}
+
+}
+
+if(window.innerWidth>700){
+
+detail.innerHTML=html;
+
+}else{
+
+modal.innerHTML=`
+<button class="closeBtn" onclick="closeModal()">閉じる</button>
+${html}
+`;
+
+modal.style.display="block";
+
+}
+
+}
+
+window.closeModal=function(){
+modal.style.display="none";
+}
+
+/* ===== Firebase ===== */
+
+onSnapshot(collection(db,"categories"),async s=>{
+categories=s.docs.map(d=>d.data());
+await renderCategories();
+});
+
+onSnapshot(collection(db,"products"),s=>{
+products=s.docs.map(d=>d.data());
+});
+
+</script>
 
 </body>
 </html>
