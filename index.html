@@ -6,7 +6,22 @@
 <title>Mtgroup</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet">
+
 <link rel="stylesheet" href="style.css">
+
+<style>
+
+/* カテゴリアイコン表示 */
+.categoryBtn img{
+width:28px;
+height:28px;
+object-fit:cover;
+border-radius:6px;
+margin-right:8px;
+}
+
+</style>
+
 </head>
 
 <body>
@@ -39,6 +54,7 @@
 <script>
 (()=>{
 const root=document.documentElement;
+
 const set=(x,y)=>{
 root.style.setProperty("--mx",x+"px");
 root.style.setProperty("--my",y+"px");
@@ -55,6 +71,7 @@ const t=e.touches && e.touches[0];
 if(!t) return;
 set(t.clientX,t.clientY);
 },{passive:true});
+
 })();
 </script>
 
@@ -88,6 +105,7 @@ const modal=document.getElementById("modal");
 /* 動画URL変換 */
 
 function convertVideoUrl(url){
+
 if(!url) return "";
 
 if(url.includes("watch?v=")){
@@ -111,9 +129,10 @@ return "https://player.vimeo.com/video/"+url.split("vimeo.com/")[1];
 }
 
 return url;
+
 }
 
-/* ここだけ修正 */
+/* カテゴリ画像 */
 
 function getCategoryImage(c){
 return c.image || c.icon || c.img || "";
@@ -161,6 +180,7 @@ products
 
 const div=document.createElement("div");
 div.className="card";
+
 div.onclick=()=>showDetail(p);
 
 div.innerHTML=`
@@ -179,6 +199,7 @@ productList.appendChild(div);
 window.searchAll=function(){
 
 const q=document.getElementById("searchBox").value.toLowerCase();
+
 productList.innerHTML="";
 
 products
@@ -190,6 +211,7 @@ p.category===currentCategory &&
 
 const div=document.createElement("div");
 div.className="card";
+
 div.onclick=()=>showDetail(p);
 
 div.innerHTML=`
@@ -203,7 +225,7 @@ productList.appendChild(div);
 
 }
 
-/* 詳細表示 */
+/* 商品説明 */
 
 function showDetail(p){
 
@@ -257,7 +279,11 @@ renderCategories();
 });
 
 onSnapshot(collection(db,"products"),s=>{
-products=s.docs.map(d=>d.data());
+
+products=s.docs
+.map(d=>d.data())
+.sort((a,b)=>(a.order||0)-(b.order||0));
+
 });
 
 </script>
