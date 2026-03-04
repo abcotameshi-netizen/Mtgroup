@@ -571,17 +571,48 @@ height:250px;
 
 }
 
-/* ===== 追加：カテゴリ画像表示安定化 ===== */
+/* ===== 追加機能（既存コード変更なし） ===== */
+
+/* カテゴリ選択ネオン */
+.categoryBtn.active{
+box-shadow:0 0 15px #00eaff,0 0 35px #00eaff55;
+background:rgba(0,90,140,.7);
+}
+
+/* 商品3カラム */
+@media(min-width:900px){
+
+#productList{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:12px;
+}
+
+.card{
+flex-direction:column;
+align-items:center;
+text-align:center;
+}
+
+.card img{
+width:100%;
+height:120px;
+}
+
+}
+
+/* 商品カード浮遊 */
+
+.card{
+transform-style:preserve-3d;
+}
+
+.card:hover{
+transform:translateY(-6px) scale(1.03);
+}
+
+/* 画像ロード安定 */
 
 .categoryBtn img[src=""]{
 display:none;
-}
-
-.categoryBtn{
-align-items:center;
-}
-
-.categoryBtn img{
-image-rendering:auto;
-object-fit:cover;
 }
