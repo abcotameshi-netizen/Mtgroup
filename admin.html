@@ -25,33 +25,26 @@ input,textarea,select{width:100%;margin:6px 0;padding:6px;}
 <div id="mainPanel" style="display:none;">
 
 <div class="panel">
-
 <h3>商品追加</h3>
 
 <select id="productCategory"></select>
 
 <input id="pName" placeholder="商品名">
-<input id="pImage" placeholder="画像URL">
+<input id="pImage" placeholder="画像URL ">
 <input id="pVideo" placeholder="動画URL（任意）">
 <textarea id="pDesc" placeholder="説明"></textarea>
 
 <button onclick="addProduct()">商品追加</button>
 
 <hr>
-
 <div id="productList"></div>
-
 </div>
 
 <div class="panel">
-
 <h3>カテゴリ追加</h3>
-
 <input id="catName">
 <input id="catImage" placeholder="カテゴリ画像URL">
-
 <button onclick="addCategory()">カテゴリ追加</button>
-
 </div>
 
 </div>
@@ -70,11 +63,11 @@ const firebaseConfig = {
   appId: "1:33007954637:web:0a1c249df6764f8d855784",
   measurementId: "G-CMNF3DKT7G"
 };
-
+  
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
-const ADMIN_PASSWORD="1234";
+const ADMIN_PASSWORD="mdmd9696";
 const LOGIN_KEY="admin_login_time";
 const LOGIN_DURATION=24*60*60*1000;
 
@@ -86,7 +79,7 @@ const productList=document.getElementById("productList");
 const productCategory=document.getElementById("productCategory");
 const mainPanel=document.getElementById("mainPanel");
 
-/* ===== URL判定だけ追加 ===== */
+/* ===== 判定 ===== */
 
 function isVideo(url){
 if(!url) return false;
@@ -128,7 +121,7 @@ catName.value="";
 catImage.value="";
 }
 
-/* ===== 商品追加（ここだけ拡張） ===== */
+/* ===== 商品追加 ===== */
 
 window.addProduct=async function(){
 
@@ -140,18 +133,13 @@ let video=pVideo.value.trim();
 
 if(!category||!name)return alert("必須項目不足");
 
-/* 画像欄に動画が入ったら動画扱い */
 if(isVideo(image)){
 video=image;
 image="";
 }
 
 await addDoc(collection(db,"products"),{
-category,
-name,
-desc,
-image,
-video,
+category,name,desc,image,video,
 order:Date.now(),
 updatedAt:Date.now()
 });
@@ -162,11 +150,69 @@ pImage.value="";
 pVideo.value="";
 }
 
-/* ===== 展開切替 ===== */
+/* ===== 展開 ===== */
 
 function toggleCategory(name){
 openCategories[name]=!openCategories[name];
 renderProducts();
+}
+
+/* ===== 並び替え ===== */
+
+window.moveCategoryUp=async id=>{
+const s=[...categories].sort((a,b)=>a.order-b.order);
+const i=s.findIndex(c=>c.id===id);
+if(i<=0)return;
+await updateDoc(doc(db,"categories",s[i].id),{order:s[i-1].order});
+await updateDoc(doc(db,"categories",s[i-1].id),{order:s[i].order});
+}
+
+window.moveCategoryDown=async id=>{
+const s=[...categories].sort((a,b)=>a.order-b.order);
+const i=s.findIndex(c=>c.id===id);
+if(i>=s.length-1)return;
+await updateDoc(doc(db,"categories",s[i].id),{order:s[i+1].order});
+await updateDoc(doc(db,"categories",s[i+1].id),{order:s[i].order});
+}
+
+window.moveProductUp=async id=>{
+const s=[...products].sort((a,b)=>a.order-b.order);
+const i=s.findIndex(p=>p.id===id);
+if(i<=0)return;
+await updateDoc(doc(db,"products",s[i].id),{order:s[i-1].order});
+await updateDoc(doc(db,"products",s[i-1].id),{order:s[i].order});
+}
+
+window.moveProductDown=async id=>{
+const s=[...products].sort((a,b)=>a.order-b.order);
+const i=s.findIndex(p=>p.id===id);
+if(i>=s.length-1)return;
+await updateDoc(doc(db,"products",s[i].id),{order:s[i+1].order});
+await updateDoc(doc(db,"products",s[i+1].id),{order:s[i].order});
+}
+
+/* ===== 編集 ===== */
+
+window.editProduct=async function(p){
+const name=prompt("商品名",p.name);
+if(name===null)return;
+await updateDoc(doc(db,"products",p.id),{
+name,
+desc:prompt("説明",p.desc||""),
+image:prompt("画像URL",p.image||""),
+video:prompt("動画URL",p.video||""),
+updatedAt:Date.now()
+});
+}
+
+window.editCategory=async function(cat){
+const name=prompt("カテゴリ名",cat.name);
+if(name===null)return;
+await updateDoc(doc(db,"categories",cat.id),{
+name,
+image:prompt("画像URL",cat.image||""),
+updatedAt:Date.now()
+});
 }
 
 /* ===== 削除 ===== */
@@ -191,8 +237,13 @@ categories.forEach(cat=>{
 
 const header=document.createElement("div");
 header.className="categoryHeader";
-header.innerHTML=`${openCategories[cat.name]?"▼":"▶"} ${cat.name}
-<button onclick="deleteCategory('${cat.id}')">削除</button>`;
+header.innerHTML=`
+${openCategories[cat.name]?"▼":"▶"} ${cat.name}
+<button onclick="moveCategoryUp('${cat.id}')">▲</button>
+<button onclick="moveCategoryDown('${cat.id}')">▼</button>
+<button onclick='editCategory(${JSON.stringify(cat)})'>編集</button>
+<button onclick="deleteCategory('${cat.id}')">削除</button>
+`;
 header.onclick=()=>toggleCategory(cat.name);
 productList.appendChild(header);
 
@@ -205,6 +256,9 @@ const div=document.createElement("div");
 div.className="item";
 div.innerHTML=`
 ${p.name}
+<button onclick="moveProductUp('${p.id}')">▲</button>
+<button onclick="moveProductDown('${p.id}')">▼</button>
+<button onclick='editProduct(${JSON.stringify(p)})'>編集</button>
 <button onclick="deleteProduct('${p.id}')">削除</button>
 `;
 productList.appendChild(div);
@@ -242,4 +296,3 @@ checkAutoLogin();
 
 </body>
 </html>
-
