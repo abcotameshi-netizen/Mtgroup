@@ -48,7 +48,7 @@ animation:gridMove 20s linear infinite;
 100%{transform:translateY(-200px);}
 }
 
-/* ===== AIデータストリーム + マウス光 ===== */
+/* ===== AIデータストリーム ===== */
 
 body::after{
 
@@ -84,7 +84,7 @@ pointer-events:none;
 100%{background-position:0 400px;}
 }
 
-/* ===== 粒子エフェクト ===== */
+/* ===== 粒子 ===== */
 
 html::before{
 
@@ -170,7 +170,7 @@ z-index:100;
 
 }
 
-/* ===== ホログラム文字グリッチ ===== */
+/* ===== ロゴ ===== */
 
 .logoText{
 
@@ -212,7 +212,7 @@ gap:20px;
 
 }
 
-/* ===== ホログラム立体パネル ===== */
+/* ===== パネル ===== */
 
 .panel{
 
@@ -232,8 +232,6 @@ box-shadow:
 0 0 25px #00eaff22,
 inset 0 0 15px #00eaff22;
 
-transform-style:preserve-3d;
-
 transition:.25s;
 
 }
@@ -248,69 +246,11 @@ inset 0 0 30px #00eaff33;
 
 }
 
-/* ===== HUD角フレーム ===== */
-
-.panel::after{
-
-content:"";
-
-position:absolute;
-
-inset:0;
-
-pointer-events:none;
-
-background:
-linear-gradient(#00eaff,#00eaff) left top,
-linear-gradient(#00eaff,#00eaff) right top,
-linear-gradient(#00eaff,#00eaff) left bottom,
-linear-gradient(#00eaff,#00eaff) right bottom;
-
-background-size:
-20px 2px,
-2px 20px;
-
-background-repeat:no-repeat;
-
-opacity:.6;
-
-}
-
-/* ===== ホログラムスキャン ===== */
-
-.panel::before{
-
-content:"";
-
-position:absolute;
-
-inset:0;
-
-border-radius:14px;
-
-background:
-linear-gradient(90deg,transparent,#00eaff33,transparent);
-
-animation:holoScan 4s linear infinite;
-
-pointer-events:none;
-
-}
-
-@keyframes holoScan{
-0%{transform:translateX(-100%);}
-100%{transform:translateX(100%);}
-}
-
 /* ===== カテゴリ ===== */
 
 .categories{
-
 width:260px;
 min-width:260px;
-
-overflow-x:auto;
-
 }
 
 #categoryList{
@@ -321,15 +261,17 @@ gap:10px;
 
 }
 
+/* ===== カテゴリボタン ===== */
+
 .categoryBtn{
 
 display:flex;
 align-items:center;
-gap:8px;
+gap:10px;
 
 padding:10px;
 
-border-radius:10px;
+border-radius:12px;
 
 cursor:pointer;
 
@@ -349,14 +291,18 @@ background:rgba(0,70,120,.6);
 
 }
 
+/* ===== カテゴリ画像自動調整 ===== */
+
 .categoryBtn img{
 
-width:28px;
-height:28px;
+width:34px;
+height:34px;
 
-border-radius:6px;
+border-radius:8px;
 
 object-fit:cover;
+
+aspect-ratio:1/1;
 
 }
 
@@ -366,7 +312,7 @@ object-fit:cover;
 width:420px;
 }
 
-/* ===== 3Dホログラムカード ===== */
+/* ===== 商品カード ===== */
 
 .card{
 
@@ -386,10 +332,6 @@ background:rgba(0,30,60,.5);
 border:1px solid #00eaff33;
 
 transition:transform .1s, box-shadow .2s;
-
-transform-style:preserve-3d;
-
-perspective:600px;
 
 }
 
@@ -470,7 +412,7 @@ border:1px solid #00eaff55;
 
 }
 
-/* ===== 閉じるボタン ===== */
+/* ===== 閉じる ===== */
 
 .closeBtn{
 
@@ -496,7 +438,7 @@ box-shadow:0 0 15px #00eaff;
 
 }
 
-/* ===== SFレーダー ===== */
+/* ===== レーダー ===== */
 
 .radar{
 
@@ -563,10 +505,66 @@ border-radius:10px;
 flex-direction:column;
 }
 
-.categories,
-.products{
+/* カテゴリ横スクロール */
+
+.categories{
 width:100%;
 min-width:100%;
+overflow-x:auto;
+}
+
+#categoryList{
+
+display:flex;
+flex-wrap:nowrap;
+
+overflow-x:auto;
+
+gap:12px;
+
+padding-bottom:8px;
+
+scroll-behavior:smooth;
+
+}
+
+/* スマホカテゴリUI */
+
+.categoryBtn{
+
+flex-direction:column;
+
+min-width:85px;
+
+padding:10px;
+
+text-align:center;
+
+}
+
+/* スマホ画像 */
+
+.categoryBtn img{
+
+width:60px;
+height:60px;
+
+}
+
+/* 名前 */
+
+.categoryBtn span{
+
+font-size:12px;
+
+margin-top:4px;
+
+}
+
+/* 商品 */
+
+.products{
+width:100%;
 }
 
 .detail{
