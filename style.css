@@ -309,7 +309,40 @@ pointer-events:none;
 width:260px;
 min-width:260px;
 
+overflow-x:hidden;
+
+}
+
+#categoryList{
+
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+
+}
+
+/* ===== スマホだけ横スクロール ===== */
+
+@media(max-width:700px){
+
+.categories{
+
+width:100%;
+min-width:100%;
+
 overflow-x:auto;
+
+}
+
+#categoryList{
+
+flex-wrap:nowrap;
+
+}
+
+.categoryBtn{
+
+flex:0 0 auto;
 
 }
 
