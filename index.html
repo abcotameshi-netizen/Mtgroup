@@ -33,6 +33,10 @@
 <div id="productDetail"></div>
 </div>
 
+</div>
+
+<div id="modal" class="modal"></div>
+
 <!-- ===== 歯車背景 ===== -->
 
 <div class="gear-bg">
@@ -45,12 +49,10 @@
 
 </div>
 
-<div id="modal" class="modal"></div>
-
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAii9UA3YBztj3XE8QErStcf-TpIkFJYWQ",
@@ -74,14 +76,13 @@ const productList=document.getElementById("productList");
 const detail=document.getElementById("productDetail");
 const modal=document.getElementById("modal");
 
-/* ===== メディア判定（万能版） ===== */
+/* ===== メディア判定 ===== */
 
 function detectMedia(url){
 
 if(!url) return {type:"none"};
 url=url.trim();
 
-/* ===== YouTube ===== */
 if(url.includes("youtu")){
 let id="";
 if(url.includes("youtu.be/")){
@@ -96,23 +97,19 @@ id=url.split("embed/")[1].split("?")[0];
 return {type:"youtube",src:"https://www.youtube.com/embed/"+id};
 }
 
-/* ===== Vimeo ===== */
 if(url.includes("vimeo.com")){
 let id=url.split("/").pop().split("?")[0];
 return {type:"vimeo",src:"https://player.vimeo.com/video/"+id};
 }
 
-/* ===== 直リンク動画 ===== */
 if(url.match(/\.(mp4|webm|ogg)$/i)){
 return {type:"video",src:url};
 }
 
-/* ===== 画像 ===== */
 if(url.match(/\.(jpg|jpeg|png|gif|webp)$/i)){
 return {type:"image",src:url};
 }
 
-/* ===== その他 ===== */
 return {type:"iframe",src:url};
 }
 
@@ -180,7 +177,6 @@ function showDetail(p){
 let description=(p.desc||"").replace(/\n/g,"<br>");
 let html=`<h2>${p.name}</h2><div class="desc">${description}</div>`;
 
-/* 画像 */
 if(p.image){
 let media=detectMedia(p.image);
 if(media.type==="image"){
@@ -188,7 +184,6 @@ html+=`<img src="${media.src}">`;
 }
 }
 
-/* 動画 */
 if(p.video){
 let media=detectMedia(p.video);
 
@@ -215,8 +210,6 @@ window.closeModal=function(){
 modal.style.display="none";
 }
 
-import { query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
 /* ===== Firebase ===== */
 
 onSnapshot(query(collection(db,"categories"),orderBy("order")),s=>{
@@ -227,10 +220,10 @@ renderCategories();
 onSnapshot(query(collection(db,"products"),orderBy("order")),s=>{
 products=s.docs.map(d=>d.data());
 
-/* カテゴリ選択中なら商品再描画 */
 if(currentCategory){
 renderProducts();
-}  
+}
+
 });
 
 </script>
