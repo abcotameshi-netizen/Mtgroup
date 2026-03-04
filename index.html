@@ -274,7 +274,7 @@
     onSnapshot(
     query(collection(db,"products"),orderBy("order")),
   s=>{
-    products=s.docs.map(d=>d.data());
+    products=s.docs.map(d=>({id:d.id,...d.data()}));
     }
 );
 
