@@ -85,6 +85,8 @@ const productList=document.getElementById("productList");
 const detail=document.getElementById("productDetail");
 const modal=document.getElementById("modal");
 
+/* 動画URL変換 */
+
 function convertVideoUrl(url){
 if(!url) return "";
 
@@ -111,9 +113,10 @@ return "https://player.vimeo.com/video/"+url.split("vimeo.com/")[1];
 return url;
 }
 
-/* ここだけ修正：画像取得 */
+/* ここだけ修正 */
+
 function getCategoryImage(c){
-return c.icon || c.image || c.img || "";
+return c.image || c.icon || c.img || "";
 }
 
 /* カテゴリ描画 */
@@ -200,7 +203,7 @@ productList.appendChild(div);
 
 }
 
-/* 説明表示 */
+/* 詳細表示 */
 
 function showDetail(p){
 
@@ -244,8 +247,6 @@ modal.style.display="none";
 /* Firestore */
 
 onSnapshot(collection(db,"categories"),s=>{
-
-/* ここだけ追加：管理画面と同じ順番 */
 
 categories=s.docs
 .map(d=>d.data())
