@@ -509,8 +509,6 @@ border-radius:10px;
 flex-direction:column;
 }
 
-/* カテゴリ横スクロール */
-
 .categories{
 width:100%;
 min-width:100%;
@@ -532,8 +530,6 @@ scroll-behavior:smooth;
 
 }
 
-/* スマホカテゴリUI */
-
 .categoryBtn{
 
 flex-direction:column;
@@ -546,16 +542,12 @@ text-align:center;
 
 }
 
-/* スマホ画像 */
-
 .categoryBtn img{
 
 width:60px;
 height:60px;
 
 }
-
-/* 名前 */
 
 .categoryBtn span{
 
@@ -564,8 +556,6 @@ font-size:12px;
 margin-top:4px;
 
 }
-
-/* 商品 */
 
 .products{
 width:100%;
@@ -579,4 +569,19 @@ display:none;
 height:250px;
 }
 
+}
+
+/* ===== 追加：カテゴリ画像表示安定化 ===== */
+
+.categoryBtn img[src=""]{
+display:none;
+}
+
+.categoryBtn{
+align-items:center;
+}
+
+.categoryBtn img{
+image-rendering:auto;
+object-fit:cover;
 }
