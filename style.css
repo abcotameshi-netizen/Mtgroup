@@ -346,6 +346,51 @@ flex:0 0 auto;
 
 }
 
+#categoryList{
+
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+
+}
+
+.categoryBtn{
+
+display:flex;
+align-items:center;
+gap:8px;
+
+padding:10px;
+
+border-radius:10px;
+
+cursor:pointer;
+
+background:rgba(0,50,90,.5);
+
+border:1px solid #00eaff33;
+
+transition:.2s;
+
+}
+
+.categoryBtn:hover{
+
+box-shadow:0 0 15px #00eaff;
+
+background:rgba(0,70,120,.6);
+
+}
+
+.categoryBtn img{
+
+width:28px;
+height:28px;
+
+border-radius:6px;
+
+object-fit:cover;
+
 }
 
 /* ===== 商品 ===== */
@@ -554,8 +599,6 @@ display:none;
 height:250px;
 }
 
-}
-
 /* ===== スクロールバー ===== */
 
 ::-webkit-scrollbar{
@@ -567,48 +610,24 @@ background:#00eaff;
 border-radius:10px;
 }
 
-/* ===== 追加：PC黄金比カード ===== */
+}
+
+/* ===== 追加（画像サイズだけ調整） ===== */
 
 @media(min-width:701px){
 
 .card img{
-
-width:120px;
-
-height:auto;
-
-aspect-ratio:1.618/1;
-
+max-width:85px;
+height:85px;
 }
 
 }
-
-/* ===== 追加：スマホ1商品スクロール ===== */
 
 @media(max-width:700px){
 
-.products{
-
-display:flex;
-
-flex-direction:column;
-
-gap:16px;
-
-}
-
-.card{
-
-flex-direction:column;
-
-}
-
 .card img{
-
-width:100%;
-
-aspect-ratio:1.618/1;
-
+max-width:70px;
+height:70px;
 }
 
 }
