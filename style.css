@@ -24,7 +24,7 @@ left:0;
 width:100%;
 height:100%;
 pointer-events:none;
-z-index:-1;
+z-index:-2;
 }
 
 /* ===== レイヤー1（奥・遅い） ===== */
@@ -82,7 +82,118 @@ animation:gearFast 35s linear infinite reverse;
 opacity:.55;
 }
 
+/* ===== 新リアル噛み合い歯車レイヤー ===== */
+
+.gearSystem{
+position:fixed;
+inset:0;
+pointer-events:none;
+z-index:-1;
+}
+
+/* ===== 歯車共通 ===== */
+
+.gear{
+position:absolute;
+border-radius:50%;
+background:
+
+radial-gradient(circle at 30% 30%,#ffffff33,#ffffff00 40%),
+
+radial-gradient(circle,#888 0%,#444 45%,#111 70%,#000 100%),
+
+repeating-conic-gradient(
+#000 0deg 8deg,
+transparent 8deg 16deg
+);
+
+mask:radial-gradient(circle,transparent 0 32%,#000 33%);
+
+box-shadow:
+inset 0 10px 25px #ffffff22,
+inset 0 -15px 30px #000000aa,
+0 0 40px #000;
+
+opacity:.35;
+}
+
+/* ===== 噛み合う配置 ===== */
+
+.gear1{
+width:520px;
+height:520px;
+left:-140px;
+top:120px;
+animation:gearSpin1 42s linear infinite;
+}
+
+.gear2{
+width:320px;
+height:320px;
+left:310px;
+top:260px;
+animation:gearSpin2 25s linear infinite;
+}
+
+.gear3{
+width:220px;
+height:220px;
+left:600px;
+top:60px;
+animation:gearSpin1 16s linear infinite;
+}
+
+/* ===== AIホログラム歯車 ===== */
+
+.holoGear{
+position:absolute;
+border-radius:50%;
+
+background:
+repeating-conic-gradient(
+#00eaff 0deg 6deg,
+transparent 6deg 12deg
+),
+
+radial-gradient(circle,#00eaff44,#00eaff00 60%);
+
+mask:radial-gradient(circle,transparent 0 35%,#000 36%);
+
+box-shadow:
+0 0 20px #00eaff,
+0 0 40px #00eaff,
+0 0 80px #00eaff;
+
+opacity:.35;
+}
+
+.holo1{
+width:260px;
+height:260px;
+right:220px;
+top:120px;
+animation:gearSpin2 18s linear infinite;
+}
+
+.holo2{
+width:380px;
+height:380px;
+right:-160px;
+bottom:80px;
+animation:gearSpin1 30s linear infinite;
+}
+
 /* ===== 回転アニメーション ===== */
+
+@keyframes gearSpin1{
+0%{transform:rotate(0deg);}
+100%{transform:rotate(360deg);}
+}
+
+@keyframes gearSpin2{
+0%{transform:rotate(0deg);}
+100%{transform:rotate(-360deg);}
+}
 
 @keyframes gearSlow{
 0%{transform:rotate(0deg);}
