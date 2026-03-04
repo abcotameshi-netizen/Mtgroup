@@ -205,15 +205,22 @@ window.closeModal=function(){
 modal.style.display="none";
 }
 
+import { query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
 /* ===== Firebase ===== */
 
-onSnapshot(collection(db,"categories"),s=>{
+onSnapshot(query(collection(db,"categories"),orderBy("order")),s=>{
 categories=s.docs.map(d=>d.data());
 renderCategories();
 });
 
-onSnapshot(collection(db,"products"),s=>{
+onSnapshot(query(collection(db,"products"),orderBy("order")),s=>{
 products=s.docs.map(d=>d.data());
+
+/* カテゴリ選択中なら商品再描画 */
+if(currentCategory){
+renderProducts();
+}
 });
 
 </script>
