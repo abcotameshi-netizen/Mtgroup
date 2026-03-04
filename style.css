@@ -1,24 +1,12 @@
-:root{
---mx:50vw;
---my:40vh;
-}
+:root{ --mx:50vw; --my:40vh; }
 
-*{
-box-sizing:border-box;
-margin:0;
-padding:0;
-}
+*{ box-sizing:border-box; margin:0; padding:0; }
 
-body{
-font-family:"Noto Sans JP",sans-serif;
-color:#cfefff;
+body{ font-family:"Noto Sans JP",sans-serif; color:#cfefff;
 
-background:
-radial-gradient(circle at 20% 20%,#001a2b,#000814 60%);
+background: radial-gradient(circle at 20% 20%,#001a2b,#000814 60%);
 
-min-height:100vh;
-overflow-x:hidden;
-}
+min-height:100vh; overflow-x:hidden; }
 
 /* ===== AIグリッド背景 ===== */
 
@@ -26,12 +14,9 @@ body::before{
 
 content:"";
 
-position:fixed;
-inset:0;
+position:fixed; inset:0;
 
-background-image:
-linear-gradient(#00eaff22 1px,transparent 1px),
-linear-gradient(90deg,#00eaff22 1px,transparent 1px);
+background-image: linear-gradient(#00eaff22 1px,transparent 1px), linear-gradient(90deg,#00eaff22 1px,transparent 1px);
 
 background-size:40px 40px;
 
@@ -43,10 +28,7 @@ animation:gridMove 20s linear infinite;
 
 }
 
-@keyframes gridMove{
-0%{transform:translateY(0);}
-100%{transform:translateY(-200px);}
-}
+@keyframes gridMove{ 0%{transform:translateY(0);} 100%{transform:translateY(-200px);} }
 
 /* ===== AIデータストリーム + マウス光 ===== */
 
@@ -54,24 +36,13 @@ body::after{
 
 content:"";
 
-position:fixed;
-inset:0;
+position:fixed; inset:0;
 
 background:
 
-radial-gradient(
-600px 400px at var(--mx) var(--my),
-rgba(0,234,255,.25),
-transparent 70%
-),
+radial-gradient( 600px 400px at var(--mx) var(--my), rgba(0,234,255,.25), transparent 70% ),
 
-repeating-linear-gradient(
-180deg,
-transparent,
-transparent 40px,
-#00eaff11 41px,
-#00eaff11 42px
-);
+repeating-linear-gradient( 180deg, transparent, transparent 40px, #00eaff11 41px, #00eaff11 42px );
 
 animation:dataFlow 12s linear infinite;
 
@@ -79,10 +50,7 @@ pointer-events:none;
 
 }
 
-@keyframes dataFlow{
-0%{background-position:0 0;}
-100%{background-position:0 400px;}
-}
+@keyframes dataFlow{ 0%{background-position:0 0;} 100%{background-position:0 400px;} }
 
 /* ===== 粒子エフェクト ===== */
 
@@ -90,11 +58,9 @@ html::before{
 
 content:"";
 
-position:fixed;
-inset:0;
+position:fixed; inset:0;
 
-background-image:
-radial-gradient(#00eaff55 1px,transparent 1px);
+background-image: radial-gradient(#00eaff55 1px,transparent 1px);
 
 background-size:70px 70px;
 
@@ -106,10 +72,7 @@ pointer-events:none;
 
 }
 
-@keyframes particlesMove{
-0%{transform:translateY(0);}
-100%{transform:translateY(-500px);}
-}
+@keyframes particlesMove{ 0%{transform:translateY(0);} 100%{transform:translateY(-500px);} }
 
 /* ===== AIコード雨 ===== */
 
@@ -117,16 +80,9 @@ html::after{
 
 content:"";
 
-position:fixed;
-inset:0;
+position:fixed; inset:0;
 
-background-image:
-repeating-linear-gradient(
-180deg,
-transparent,
-transparent 18px,
-#00eaff33 19px
-);
+background-image: repeating-linear-gradient( 180deg, transparent, transparent 18px, #00eaff33 19px );
 
 background-size:100% 20px;
 
@@ -138,25 +94,17 @@ pointer-events:none;
 
 }
 
-@keyframes matrixRain{
-0%{background-position:0 0;}
-100%{background-position:0 600px;}
-}
+@keyframes matrixRain{ 0%{background-position:0 0;} 100%{background-position:0 600px;} }
 
 /* ===== ヘッダー ===== */
 
 .header{
 
-position:fixed;
-top:0;
-left:0;
-right:0;
+position:fixed; top:0; left:0; right:0;
 
 height:65px;
 
-display:flex;
-align-items:center;
-justify-content:center;
+display:flex; align-items:center; justify-content:center;
 
 background:rgba(0,20,40,.6);
 
@@ -174,9 +122,7 @@ z-index:100;
 
 .logoText{
 
-font-size:24px;
-font-weight:bold;
-letter-spacing:2px;
+font-size:24px; font-weight:bold; letter-spacing:2px;
 
 color:#00eaff;
 
@@ -190,9 +136,7 @@ animation:logoGlitch 6s infinite;
 
 0%,95%,100%{transform:none;}
 
-96%{transform:translateX(2px);}
-97%{transform:translateX(-2px);}
-98%{transform:translateY(1px);}
+96%{transform:translateX(2px);} 97%{transform:translateX(-2px);} 98%{transform:translateY(1px);}
 
 }
 
@@ -228,9 +172,7 @@ padding:16px;
 
 border:1px solid #00eaff33;
 
-box-shadow:
-0 0 25px #00eaff22,
-inset 0 0 15px #00eaff22;
+box-shadow: 0 0 25px #00eaff22, inset 0 0 15px #00eaff22;
 
 transform-style:preserve-3d;
 
@@ -242,9 +184,7 @@ transition:.25s;
 
 transform:translateY(-3px) scale(1.01);
 
-box-shadow:
-0 0 35px #00eaff66,
-inset 0 0 30px #00eaff33;
+box-shadow: 0 0 35px #00eaff66, inset 0 0 30px #00eaff33;
 
 }
 
@@ -260,15 +200,9 @@ inset:0;
 
 pointer-events:none;
 
-background:
-linear-gradient(#00eaff,#00eaff) left top,
-linear-gradient(#00eaff,#00eaff) right top,
-linear-gradient(#00eaff,#00eaff) left bottom,
-linear-gradient(#00eaff,#00eaff) right bottom;
+background: linear-gradient(#00eaff,#00eaff) left top, linear-gradient(#00eaff,#00eaff) right top, linear-gradient(#00eaff,#00eaff) left bottom, linear-gradient(#00eaff,#00eaff) right bottom;
 
-background-size:
-20px 2px,
-2px 20px;
+background-size: 20px 2px, 2px 20px;
 
 background-repeat:no-repeat;
 
@@ -288,8 +222,7 @@ inset:0;
 
 border-radius:14px;
 
-background:
-linear-gradient(90deg,transparent,#00eaff33,transparent);
+background: linear-gradient(90deg,transparent,#00eaff33,transparent);
 
 animation:holoScan 4s linear infinite;
 
@@ -297,17 +230,13 @@ pointer-events:none;
 
 }
 
-@keyframes holoScan{
-0%{transform:translateX(-100%);}
-100%{transform:translateX(100%);}
-}
+@keyframes holoScan{ 0%{transform:translateX(-100%);} 100%{transform:translateX(100%);} }
 
 /* ===== カテゴリ ===== */
 
 .categories{
 
-width:260px;
-min-width:260px;
+width:260px; min-width:260px;
 
 overflow-x:hidden;
 
@@ -315,9 +244,7 @@ overflow-x:hidden;
 
 #categoryList{
 
-display:flex;
-flex-wrap:wrap;
-gap:10px;
+display:flex; flex-wrap:wrap; gap:10px;
 
 }
 
@@ -327,8 +254,7 @@ gap:10px;
 
 .categories{
 
-width:100%;
-min-width:100%;
+width:100%; min-width:100%;
 
 overflow-x:auto;
 
@@ -348,17 +274,13 @@ flex:0 0 auto;
 
 #categoryList{
 
-display:flex;
-flex-wrap:wrap;
-gap:10px;
+display:flex; flex-wrap:wrap; gap:10px;
 
 }
 
 .categoryBtn{
 
-display:flex;
-align-items:center;
-gap:8px;
+display:flex; align-items:center; gap:8px;
 
 padding:10px;
 
@@ -384,8 +306,7 @@ background:rgba(0,70,120,.6);
 
 .categoryBtn img{
 
-width:28px;
-height:28px;
+width:28px; height:28px;
 
 border-radius:6px;
 
@@ -395,16 +316,13 @@ object-fit:cover;
 
 /* ===== 商品 ===== */
 
-.products{
-width:420px;
-}
+.products{ width:420px; }
 
 /* ===== 3Dホログラムカード ===== */
 
 .card{
 
-display:flex;
-gap:12px;
+display:flex; gap:12px;
 
 padding:14px;
 
@@ -428,21 +346,15 @@ perspective:600px;
 
 .card:hover{
 
-transform:
-rotateX(6deg)
-rotateY(-6deg)
-translateY(-4px)
-scale(1.02);
+transform: rotateX(6deg) rotateY(-6deg) translateY(-4px) scale(1.02);
 
-box-shadow:
-0 10px 40px #00eaff66;
+box-shadow: 0 10px 40px #00eaff66;
 
 }
 
 .card img{
 
-width:85px;
-height:85px;
+width:85px; height:85px;
 
 border-radius:10px;
 
@@ -452,25 +364,11 @@ object-fit:cover;
 
 /* ===== 詳細 ===== */
 
-.detail{
-flex:1;
-min-height:500px;
-}
+.detail{ flex:1; min-height:500px; }
 
-.detail img{
-max-width:100%;
-margin-top:15px;
-border-radius:12px;
-border:1px solid #00eaff55;
-}
+.detail img{ max-width:100%; margin-top:15px; border-radius:12px; border:1px solid #00eaff55; }
 
-.detail iframe{
-width:100%;
-height:350px;
-margin-top:15px;
-border-radius:12px;
-border:1px solid #00eaff55;
-}
+.detail iframe{ width:100%; height:350px; margin-top:15px; border-radius:12px; border:1px solid #00eaff55; }
 
 /* ===== モーダル ===== */
 
@@ -494,8 +392,7 @@ z-index:9999;
 
 .modal iframe{
 
-width:100%;
-height:420px;
+width:100%; height:420px;
 
 border-radius:12px;
 
@@ -535,11 +432,9 @@ box-shadow:0 0 15px #00eaff;
 
 position:fixed;
 
-top:90px;
-left:20px;
+top:90px; left:20px;
 
-width:120px;
-height:120px;
+width:120px; height:120px;
 
 border-radius:50%;
 
@@ -547,8 +442,7 @@ border:1px solid #00eaff55;
 
 box-shadow:0 0 20px #00eaff33;
 
-background:
-radial-gradient(circle,#00eaff22,transparent 70%);
+background: radial-gradient(circle,#00eaff22,transparent 70%);
 
 overflow:hidden;
 
@@ -562,53 +456,33 @@ content:"";
 
 position:absolute;
 
-width:100%;
-height:100%;
+width:100%; height:100%;
 
-background:
-linear-gradient(90deg,transparent,#00eaff55,transparent);
+background: linear-gradient(90deg,transparent,#00eaff55,transparent);
 
 animation:radarSpin 4s linear infinite;
 
 }
 
-@keyframes radarSpin{
-0%{transform:rotate(0deg);}
-100%{transform:rotate(360deg);}
-}
+@keyframes radarSpin{ 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
 
 /* ===== スマホ ===== */
 
 @media(max-width:700px){
 
-.container{
-flex-direction:column;
-}
+.container{ flex-direction:column; }
 
-.categories,
-.products{
-width:100%;
-min-width:100%;
-}
+.categories, .products{ width:100%; min-width:100%; }
 
-.detail{
-display:none;
-}
+.detail{ display:none; }
 
-.modal iframe{
-height:250px;
-}
+.modal iframe{ height:250px; }
 
 /* ===== スクロールバー ===== */
 
-::-webkit-scrollbar{
-width:8px;
-}
+::-webkit-scrollbar{ width:8px; }
 
-::-webkit-scrollbar-thumb{
-background:#00eaff;
-border-radius:10px;
-}
+::-webkit-scrollbar-thumb{ background:#00eaff; border-radius:10px; }
 
 }
 
@@ -616,18 +490,28 @@ border-radius:10px;
 
 @media(min-width:701px){
 
-.card img{
-max-width:85px;
-height:85px;
-}
+.card img{ max-width:85px; height:85px; }
 
 }
 
 @media(max-width:700px){
 
-.card img{
-max-width:70px;
-height:70px;
+.card img{ max-width:70px; height:70px; }
+
+}
+
+/* ===== 追加：カテゴリ画像を小さく ===== */
+
+.categoryBtn img{
+width:20px;
+height:20px;
+}
+
+@media(max-width:700px){
+
+.categoryBtn img{
+width:18px;
+height:18px;
 }
 
 }
