@@ -544,17 +544,6 @@ animation:radarSpin 4s linear infinite;
 100%{transform:rotate(360deg);}
 }
 
-/* ===== スクロールバー ===== */
-
-::-webkit-scrollbar{
-width:8px;
-}
-
-::-webkit-scrollbar-thumb{
-background:#00eaff;
-border-radius:10px;
-}
-
 /* ===== スマホ ===== */
 
 @media(max-width:700px){
@@ -576,5 +565,15 @@ display:none;
 .modal iframe{
 height:250px;
 }
+  
+/* ===== スクロールバー ===== */
 
+::-webkit-scrollbar{
+width:8px;
+}
+
+::-webkit-scrollbar-thumb{
+background:#00eaff;
+border-radius:10px;
+}
 }
